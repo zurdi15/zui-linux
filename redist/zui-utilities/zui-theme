@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+if [[ -d ${HOME}/.zui/themes/${1} ]]; then
+    ln -sfn ${HOME}/.zui/themes/${1} ${HOME}/.zui/current_theme
+    ln -sfn ${HOME}/.zui/current_theme/wallpapers/default ${HOME}/.zui/current_theme/wallpapers/current_wallpaper
+else
+    echo "${1} theme is not installed."
+fi
+
+zui-reload

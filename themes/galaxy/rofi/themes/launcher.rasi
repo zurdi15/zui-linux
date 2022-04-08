@@ -1,0 +1,63 @@
+configuration {
+  font: "Iosevka Nerd Font 12";
+  show-icons: true;
+  drun-display-format: "{icon} {name}";
+  display-run: " ";
+  display-window: " ";
+  modi: "run,window";
+}
+
+* {
+  background-color: #472B7A;
+  bg-alt: #6E46A4;
+  fg: #F8F8F2;
+
+  fg-selected: #F8F8F2;
+  prompt: #F8F8F2;
+
+  border: 0;
+  lines: 12;
+  padding: 0;
+  margin: 0;
+  spacing: 0;
+}
+
+window {
+  width: 30%;
+  transparency: "real";
+}
+
+mainbox {
+  children: [inputbar, listview];
+}
+
+listview {
+  columns: 1;
+}
+
+element {
+  padding: 12;
+  orientation: vertical;
+  text-color: @fg;
+}
+
+element selected {
+  background-color: @bg-alt;
+  text-color: @fg-selected;
+}
+
+inputbar {
+  background-color: @background;
+  children: [prompt, entry];
+}
+
+prompt {
+  enabled: true;
+  padding: 12 0 0 12;
+  text-color: @prompt;
+}
+
+entry {
+  padding: 12;
+  text-color: @prompt;
+}

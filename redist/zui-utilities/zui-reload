@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+ZUI_PATH=${HOME}/.zui
+
+if [[ -f ${HOME}/.config/bspwm/bspwmrc ]]; then
+    bash ${HOME}/.config/bspwm/bspwmrc
+else
+    echo "FATAL ERROR: could not reload zui"
+fi

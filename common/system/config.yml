@@ -1,0 +1,76 @@
+# Monitors
+# use xrandr --listmonitors to get your monitor's ID
+monitors:
+  HDMI-2:
+    resolution: 1920x1080
+    rotate: normal
+    main: 1
+    workspaces: [1, 2, 3, 4, 5]
+  eDP-1:
+    resolution: 1920x1080
+    rotate: normal
+    position: left
+    workspaces: [6, 7, 8, 9, 0]
+    
+
+# Audio
+# use pactl list sinks to get your sink's list
+audio:
+  alsa_output.usb-Corsair_Corsair_VOID_PRO_Wireless_Gaming_Headset-00.analog-stereo:
+    alias: Headset
+    type: headset
+  alsa_output.pci-0000_00_1f.3.hdmi-stereo-extra1:
+    alias: Speakers
+    type: speakers
+  alsa_output.pci-0000_00_1f.3.analog-stereo:
+    alias: "Internal speakers"
+    type: speakers
+  # blacklist to not using devices on audio rotation with comma separated
+  blacklist: alsa_output.usb-Corsa_ir_Components_Inc._Corsair_ST100_Headset_Outpu_t_v0.6-00.analog-stereo
+
+
+bspc_rules_single_monitor:
+  Google-chrome:
+    desktop: 1
+    follow: on
+  Code:
+    desktop: 2
+    follow: on
+  Sublime_text:
+    desktop: 4
+    follow: on
+  firefox:
+    desktop: 5
+    follow: on
+  "Microsoft Teams - Preview":
+    desktop: 6
+    follow: off
+  Slack:
+    desktop: 7
+    follow: off
+  Spotify:
+    desktop: 8
+    follow: on
+
+bspc_rules_dual_monitor:
+  Google-chrome:
+    desktop: 1
+    follow: on
+  Code:
+    desktop: 2
+    follow: on
+  Sublime_text:
+    desktop: 4
+    follow: on
+  firefox:
+    desktop: 5
+    follow: on
+  "Microsoft Teams - Preview":
+    desktop: 6
+    follow: off
+  Slack:
+    desktop: 7
+    follow: off
+  Spotify:
+    desktop: 8
+    follow: on

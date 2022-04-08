@@ -1,0 +1,10 @@
+{
+	"theme": "Adaptive.sublime-theme",
+	"font_face": "Iosevka",
+	"font_size": 10,
+	"ignored_packages":
+	[
+		"Vintage",
+	],
+	"color_scheme": "Nord.sublime-color-scheme",
+}

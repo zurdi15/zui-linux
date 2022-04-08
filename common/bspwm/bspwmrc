@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+# fix java problem (for intellij and others)
+export _JAVA_AWT_WM_NONREPARENTING=1
+ZUI_PATH=${HOME}/.zui
+
+# init sxhkd
+pgrep -x sxhkd > /dev/null || sxhkd &
+
+bash ${ZUI_PATH}/common/system/modules/monitors/interface.sh
+
+# windows configuration
+bspc config border_width 0
+bspc config window_gap 10
+bspc config split_ratio 0.30
+bspc config borderless_monocle true
+bspc config gapless_monocle true
+bspc config focus_follows_pointer true
+
+# fix cursor on polybar
+xsetroot -cursor_name left_ptr &
+
+# init picom
+picom --experimental-backends &
+
+# set background
+feh --bg-fill ${ZUI_PATH}/current_theme/wallpapers/current_wallpaper

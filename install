@@ -1,0 +1,306 @@
+#!/bin/bash
+
+
+install-dependencies () {
+	echo "Installing dependencies..."
+
+	# Updating repos and upgrade distro
+	sudo apt update && sudo apt dist-upgrade -y
+
+	# Install all dependencies
+	sudo apt install snap build-essential libxcb-ewmh-dev libxcb-icccm4-dev libxcb-keysyms1-dev libxcb-xtest0-dev \
+	cmake cmake-data pkg-config python3-sphinx libcairo2-dev libxcb-util0-dev libxcb-randr0-dev libxcb-composite0-dev \
+	python3-xcbgen xcb-proto libxcb-image0-dev libxcb-xkb-dev libasound2-dev libpulse-dev libjsoncpp-dev libmpdclient-dev \
+	libcurl4-openssl-dev libnl-genl-3-dev libuv1-dev libpam0g-dev libxrandr-dev libfreetype6-dev libimlib2-dev libxft-dev \
+	libxext-dev libxcb-damage0-dev libxcb-xfixes0-dev libxcb-render-util0-dev libxcb-render0-dev libxcb-present-dev \
+	libxcb-xinerama0-dev libpixman-1-dev libdbus-1-dev libconfig-dev libgl1-mesa-dev libpcre2-dev libevdev-dev uthash-dev \
+	libev-dev libx11-xcb-dev libxcb-glx0-dev meson dh-autoreconf libpango1.0-dev xcb libxcb1-dev libyajl-dev libxcb-cursor-dev \
+	libxkbcommon-dev libxkbcommon-x11-dev libstartup-notification0-dev libxcb-xrm0 libxcb-xrm-dev libxcb-shape0 libxcb-shape0-dev \
+	pavucontrol python3-pip libhidapi-libusb0 libx11-dev libxinerama-dev libxss-dev libglib2.0-dev libgtk-3-dev libxdg-basedir-dev libnotify-dev curl -y
+
+	# Install bspwm and sxhkd
+	if [[ -z $(which bspwm) ]]; then
+		git clone https://github.com/baskerville/bspwm.git ${TMP_PATH}/bspwm
+		cd ${TMP_PATH}/bspwm && make && sudo make install
+		sudo apt install bspwm -y
+	fi
+	if [[ -z $(which sxhkd) ]]; then
+		git clone https://github.com/baskerville/sxhkd.git ${TMP_PATH}/sxhkd
+		cd ${TMP_PATH}/sxhkd && make && sudo make install
+	fi
+
+	# Install picom
+	if [[ -z $(which picom) ]]; then
+		git clone https://github.com/ibhagwan/picom.git ${TMP_PATH}/picom
+		cd ${TMP_PATH}/picom
+		git submodule update --init --recursive
+		meson --buildtype=release . build
+		ninja -C build
+		sudo ninja -C build install
+	fi
+
+	# Install polybar
+	if [[ -z $(which polybar) ]]; then
+		git clone --recursive https://github.com/polybar/polybar ${TMP_PATH}/polybar
+		cd ${TMP_PATH}/polybar
+		mkdir build
+		cd build/
+		cmake ..
+		make -j$(nproc)
+		sudo make install
+	fi
+
+	# Install audio polybar module
+	pip3 install pulsectl
+	git clone https://github.com/noctuid/zscroll ${TMP_PATH}/zscroll
+	cd ${TMP_PATH}/zscroll
+	sudo python3 setup.py install
+	sudo apt install playerctl -y
+	sudo snap install spotify
+
+	# Install rofi
+	sudo apt install rofi -y
+
+	# Install feh
+	sudo apt install feh -y
+
+	# Install i3lock-color
+	git clone https://github.com/Raymo111/i3lock-color.git ${TMP_PATH}/i3lock-color
+	cd ${TMP_PATH}/i3lock-color
+	./install-i3lock-color.sh
+
+	# Install zsh and powerlevel10k
+	sudo apt install zsh -y
+	git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${HOME}/powerlevel10k
+	sudo git clone --depth=1 https://github.com/romkatv/powerlevel10k.git /root/powerlevel10k
+
+	# Install firefox
+	if [[ -z $(which firefox) ]]; then
+		sudo apt remove firefox -y
+	fi
+	sudo snap install firefox
+
+	# Change default shell for user and root
+	sudo usermod --shell /usr/bin/zsh $USER
+	sudo usermod --shell /usr/bin/zsh root
+
+	# Install bat, lsd, ranger and neovim
+	sudo apt install ${BASE_PATH}/redist/deb-packages/lsd_0.21.0_amd64.deb
+	sudo apt install ${BASE_PATH}/redist/deb-packages/bat_0.19.0_amd64.deb
+	sudo apt install ranger -y
+	sudo add-apt-repository ppa:neovim-ppa/unstable -y
+	sudo apt update -y
+	sudo apt install neovim -y
+
+	# Install dunst
+	if [[ -z $(which dunst) ]]; then
+		git clone https://github.com/dunst-project/dunst.git ${TMP_PATH}/dunst
+		cd ${TMP_PATH}/dunst
+		make
+		sudo make install
+	fi
+
+	# Install vscode
+	sudo snap install code --classic
+
+	# Install sublime-text
+	sudo snap install sublime-text --classic
+
+	# Install streamdeck software
+	sudo cp ${BASE_PATH}/redist/root/10-streamdeck.rules /etc/udev/rules.d/10-streamdeck.rules
+	sudo udevadm control --reload-rules
+	pip3 install streamdeck_ui
+
+	# Cleaning things
+	sudo apt autoremove -y
+
+}
+
+install-theme () {
+	echo "Installing ${ZUI_THEME} theme..."
+
+	# Copy all config files and system modules
+	if [[ -f ${ZUI_PATH}/common/system/config.yml ]]; then
+		rsync -am --exclude='*config.yml' ${BASE_PATH}/common/ ${ZUI_PATH}/common/
+	else
+		rsync -am ${BASE_PATH}/common/ ${ZUI_PATH}/common/
+	fi
+
+	if [[ ! -d ${ZUI_PATH}/themes/${ZUI_THEME} ]]; then mkdir -p ${ZUI_PATH}/themes/${ZUI_THEME}; fi
+	rsync -am ${BASE_PATH}/themes/${ZUI_THEME}/ ${ZUI_PATH}/themes/${ZUI_THEME}/
+
+	# Create symlinks to selected theme
+	ln -sfn ${ZUI_PATH}/themes/${ZUI_THEME} ${ZUI_PATH}/current_theme
+	ln -sfn ${ZUI_PATH}/current_theme/wallpapers/default ${ZUI_PATH}/current_theme/wallpapers/current_wallpaper
+
+	# bspwm
+	if [[ -d ${CONFIG_PATH}/bspwm ]]; then rm -rf ${CONFIG_PATH}/bspwm; fi
+	ln -sfn ${ZUI_PATH}/common/bspwm ${CONFIG_PATH}/bspwm
+	# rofi
+	if [[ -d ${CONFIG_PATH}/rofi ]]; then rm -rf ${CONFIG_PATH}/rofi; fi
+	ln -sfn ${ZUI_PATH}/current_theme/rofi/themes ${ZUI_PATH}/common/rofi/themes
+	ln -sfn ${ZUI_PATH}/common/rofi ${CONFIG_PATH}/rofi
+
+	# dunst
+	if [[ -d ${CONFIG_PATH}/dunst ]]; then rm -rf ${CONFIG_PATH}/dunst; fi
+	ln -sfn ${ZUI_PATH}/current_theme/dunst ${CONFIG_PATH}/dunst
+
+	# gtk-{3|4}.0
+	if [[ -d ${CONFIG_PATH}/gtk-3.0 ]]; then rm -rf ${CONFIG_PATH}/gtk-3.0; fi
+	if [[ -d ${CONFIG_PATH}/gtk-4.0 ]]; then rm -rf ${CONFIG_PATH}/gtk-4.0; fi
+	ln -sfn ${ZUI_PATH}/current_theme/gtk-3.0 ${CONFIG_PATH}/gtk-3.0
+	ln -sfn ${ZUI_PATH}/current_theme/gtk-4.0 ${CONFIG_PATH}/gtk-4.0
+
+	# lsd
+	if [[ -d ${CONFIG_PATH}/lsd ]]; then rm -rf ${CONFIG_PATH}/lsd; fi
+	ln -sfn ${ZUI_PATH}/current_theme/lsd ${CONFIG_PATH}/lsd
+
+	# nvim
+	if [[ -d ${CONFIG_PATH}/nvim ]]; then rm -rf ${CONFIG_PATH}/nvim; fi
+	ln -sfn ${ZUI_PATH}/current_theme/nvim ${CONFIG_PATH}/nvim
+
+	# picom
+	if [[ -d ${CONFIG_PATH}/picom ]]; then rm -rf ${CONFIG_PATH}/picom; fi
+	ln -sfn ${ZUI_PATH}/current_theme/picom ${CONFIG_PATH}/picom
+
+	# polybar
+	if [[ -d ${CONFIG_PATH}/polybar ]]; then rm -rf ${CONFIG_PATH}/polybar; fi
+	ln -sfn ${ZUI_PATH}/current_theme/polybar/launch.sh ${ZUI_PATH}/common/polybar/launch.sh
+	ln -sfn ${ZUI_PATH}/current_theme/polybar/colors.ini ${ZUI_PATH}/common/polybar/colors.ini
+	ln -sfn ${ZUI_PATH}/current_theme/polybar/main_bar.ini ${ZUI_PATH}/common/polybar/main_bar.ini
+	ln -sfn ${ZUI_PATH}/current_theme/polybar/top_bars.ini ${ZUI_PATH}/common/polybar/top_bars.ini
+	ln -sfn ${ZUI_PATH}/current_theme/polybar/bottom_bars.ini ${ZUI_PATH}/common/polybar/bottom_bars.ini
+	ln -sfn ${ZUI_PATH}/common/polybar ${CONFIG_PATH}/polybar
+
+	# sublime-text
+	if [[ -d ${CONFIG_PATH}/sublime-text ]]; then rm -rf ${CONFIG_PATH}/sublime-text; fi
+	ln -sfn ${ZUI_PATH}/current_theme/sublime-text ${CONFIG_PATH}/sublime-text
+
+	# sxhkd
+	if [[ -d ${CONFIG_PATH}/sxhkd ]]; then rm -rf ${CONFIG_PATH}/sxhkd; fi
+	ln -sfn ${ZUI_PATH}/common/sxhkd ${CONFIG_PATH}/sxhkd
+
+	# p10k
+	ln -sfn ${ZUI_PATH}/current_theme/.p10k.zsh ${HOME}
+
+	# zshrc
+	ln -snf ${ZUI_PATH}/current_theme/.zshrc ${HOME}
+
+	# Installing fonts
+	fc-cache -v > /dev/null
+
+	# theme settings
+	rsync -am ${BASE_PATH}/themes/${ZUI_THEME}/.themes/ ${HOME}/.themes/
+
+	rsync -am ${BASE_PATH}/themes/${ZUI_THEME}/.local/ ${HOME}/.local/
+
+	sudo rsync -am ${BASE_PATH}/themes/${ZUI_THEME}/.icons/ ${HOME}/.icons/
+
+	sudo cp ${BASE_PATH}/redist/root/.profile /root
+	# Create symlink of .zshrc and .p10k.zsh for root:
+	sudo ln -sf /home/${USER}/.p10k.zsh /root/.p10k.zsh
+	sudo ln -sf /home/${USER}/.zshrc /root/.zshrc
+
+	# Install vim-plug for neovim
+	curl -fLo ${HOME}/.local/share/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+	cp -r ${BASE_PATH}/redist/.vim ${HOME}/.vim
+	nvim +PlugInstall +qall
+
+	# Install zsh plugins
+	if [[ -d /usr/share/zsh/zsh-plugins/zsh-syntax-highlighting ]];then
+		sudo rm -rf /usr/share/zsh/zsh-plugins/zsh-syntax-highlighting
+	fi
+	if [[ -d /usr/share/zsh/zsh-plugins/zsh-autosuggestions ]];then
+		sudo rm -rf /usr/share/zsh/zsh-plugins/zsh-autosuggestions
+	fi
+	if [[ -d /usr/share/zsh/zsh-plugins/zsh-autocomplete ]];then
+		sudo rm -rf /usr/share/zsh/zsh-plugins/zsh-autocomplete
+	fi
+	if [[ -d ${HOME}/.fzf ]];then
+		sudo rm -rf ${HOME}/.fzf
+	fi
+	sudo git clone --quiet https://github.com/zsh-users/zsh-syntax-highlighting.git /usr/share/zsh/zsh-plugins/zsh-syntax-highlighting
+	sudo git clone --quiet https://github.com/zsh-users/zsh-autosuggestions /usr/share/zsh/zsh-plugins/zsh-autosuggestions
+	sudo git clone --quiet --depth 1 -- https://github.com/marlonrichert/zsh-autocomplete.git /usr/share/zsh/zsh-plugins/zsh-autocomplete
+	sudo cp -r ${BASE_PATH}/redist/zsh-plugins/zsh-sudo /usr/share/zsh/zsh-plugins
+	git clone --quiet --depth 1 https://github.com/junegunn/fzf.git ${HOME}/.fzf
+	echo -e 'y\ny\ny\n' | ${HOME}/.fzf/install > /dev/null
+
+	# Install zui-theme utility
+	if [[ ! -d ${HOME}/.local/bin ]]; then
+		mkdir -p ${HOME}/.local/bin
+	fi
+	cp ${BASE_PATH}/redist/zui-utilities/* ${HOME}/.local/bin
+
+	# Configure backlight permissions
+	sudo usermod -a -G video ${USER}
+	if [[ $(lspci | grep -i 'amd') ]]; then
+		sed -i 's/intel_backlight/amdgpu_bl0/g' ${ZUI_PATH}/current_theme/polybar/bottom_bars.ini
+		sudo cp ${BASE_PATH}/redist/root/amd-backlight.rules /etc/udev/rules.d/70-backlight.rules
+	elif [[ $(lspci | grep -i 'intel') ]]; then
+		sudo cp ${BASE_PATH}/redist/root/intel-backlight.rules /etc/udev/rules.d/70-backlight.rules
+	fi
+
+	# Configure network interfaces triggers
+	cp ${BASE_PATH}/redist/root/trigger-check-network ${TMP_PATH}/trigger-check-network
+	sed -i "s/<user>/${USER}/g" ${TMP_PATH}/trigger-check-network
+	sudo cp ${TMP_PATH}/trigger-check-network /etc/network/if-up.d
+	sudo cp ${TMP_PATH}/trigger-check-network /etc/network/if-down.d
+	sudo cp ${TMP_PATH}/trigger-check-network /etc/network/if-post-down.d
+	sudo cp ${TMP_PATH}/trigger-check-network /etc/network/if-pre-up.d
+
+	# Install theme based components
+	if [[ -f ${BASE_PATH}/themes/${ZUI_THEME}/install ]]; then
+		bash ${BASE_PATH}/themes/${ZUI_THEME}/install
+	fi
+}
+
+help () {
+	echo "Usage: $(basename $0) [-i] [-h] theme"
+	echo "Available themes:"
+	echo -e "\t1. nord"
+	echo -e "\t2. haxor"
+	echo -e "\t3. galaxy"
+	exit $1
+}
+
+
+BASE_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TMP_PATH=/tmp/zui
+ZUI_PATH=${HOME}/.zui
+CONFIG_PATH=${HOME}/.config
+
+## Main
+
+while getopts ':ih' opt; do
+	case "$opt" in
+    	i)
+			DEPENDENCIES=1
+			;;
+
+    	h)
+			help 1
+      		;;
+
+		?)
+      		help 0
+      		;;
+	esac
+done
+shift "$(($OPTIND - 1))"
+
+ZUI_THEME=${1}
+
+if [[ -z ${ZUI_THEME} ]] || [[ ! -d ${BASE_PATH}/themes/${ZUI_THEME} ]]; then help 1; fi
+
+# Creating temporal directory
+if [[ ! -d ${TMP_PATH}/ ]]; then mkdir -p ${TMP_PATH}; fi
+
+# Creating zui path
+if [[ ! -d ${ZUI_PATH} ]]; then mkdir -p ${ZUI_PATH}; fi
+
+if [[ ${DEPENDENCIES} ]]; then install-dependencies; fi
+
+install-theme
+
+sudo rm -rf ${TMP_PATH}
