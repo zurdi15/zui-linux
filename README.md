@@ -8,5 +8,7 @@ Execute linux/zui/install.sh [theme]
 
 Available themes:
  - artic_fox
+ - galaxy
+ - haxor
 
 <h3>Screenshots [WIP]</h3>
