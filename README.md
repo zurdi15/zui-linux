@@ -4,17 +4,52 @@
 [![Shell](https://img.shields.io/badge/shell-zsh-green.svg)](https://www.gnu.org/software/zsh/)
 [![WM](https://img.shields.io/badge/window%20manager-bspwm-orange.svg)](https://github.com/baskerville/bspwm)
 
-A complete, automated installation system for a modern tiling window manager desktop environment based on **bspwm**. ZUI provides a beautiful, functional, and customizable desktop experience with multiple themes and automated setup.
+A complete, automated installation system for a modern tiling window manager desktop environment based on **bspwm**. ZUI provides a beautiful, functional, and customizable desktop experience with multiple themes and modular installation options.
+
+## 🎯 Design Philosophy
+
+ZUI follows a **modular approach** that separates UI window manager components from terminal configuration:
+
+- **🖼️ UI Components**: Window manager, status bar, compositor, themes, and visual elements
+- **💻 Terminal Setup**: Shell configuration, prompt theme, CLI tools, and terminal-specific settings
+- **🔧 User Choice**: Install both together or independently based on your needs
+
+This separation means you can:
+- Use ZUI's window manager with your existing terminal setup
+- Enhance your terminal with ZUI's configuration while keeping your current window manager
+- Install everything together for a complete desktop transformation
+- Safely experiment with themes without affecting your shell environment
+- Configure ZUI's enhanced terminal without the window manager  
+- Mix and match components as needed
+- Preserve your terminal customizations when changing UI themes
 
 ## ✨ Features
 
-- **Automated Installation**: One-command setup with dependency management
-- **Multiple Themes**: Beautiful, cohesive themes with matching components
-- **Modern Tools**: Uses current tools like polybar, rofi, picom, and dunst
-- **Modular Design**: Easy to customize and extend
-- **Hardware Detection**: Automatic configuration based on your hardware
-- **Backup System**: Preserves your existing configurations
-- **Shell Integration**: Enhanced zsh with powerlevel10k and useful plugins
+### 🏗️ **Modular Architecture**
+- **Component Independence**: UI and terminal configurations work separately
+- **Installation Flexibility**: Choose UI-only, terminal-only, or combined setup
+- **Configuration Preservation**: Respects your existing dotfiles and settings
+- **Easy Maintenance**: Update components without affecting others
+
+### 🎨 **Professional Themes**
+- **Multiple Options**: Galaxy, Nord, and Haxor themes included
+- **Cohesive Design**: Matching colors across all components
+- **Safe Switching**: Change themes without losing terminal configurations
+- **Visual Consistency**: Coordinated UI and terminal styling
+
+### 🖥️ **Modern Window Management**
+- **Tiling Layout**: Efficient bspwm window manager with intuitive controls
+- **Smart Bars**: Polybar status bars with system monitoring and controls
+- **Quick Launch**: Rofi application launcher and system menus  
+- **Visual Effects**: Picom compositor with smooth animations
+- **Notification System**: Clean dunst notifications
+- **Hardware Detection**: Automatic configuration based on your system
+
+### 💻 **Enhanced Terminal Experience**  
+- **Powerlevel10k**: Beautiful, fast zsh prompt with git integration
+- **Optimized Zsh**: Pre-configured shell with useful aliases and functions
+- **Independent Installation**: Works with any window manager
+- **Theme Coordination**: Matches UI themes when installed together
 
 ## 🖼️ Included Themes
 
@@ -26,6 +61,7 @@ A complete, automated installation system for a modern tiling window manager des
 
 ## 🔧 Components
 
+### UI Components (Window Manager)
 - **Window Manager**: [bspwm](https://github.com/baskerville/bspwm) - Binary space partitioning window manager
 - **Hotkey Daemon**: [sxhkd](https://github.com/baskerville/sxhkd) - Simple X hotkey daemon  
 - **Status Bar**: [Polybar](https://github.com/polybar/polybar) - Fast and customizable status bar
@@ -34,8 +70,16 @@ A complete, automated installation system for a modern tiling window manager des
 - **Notifications**: [Dunst](https://github.com/dunst-project/dunst) - Lightweight notification daemon
 - **Wallpaper**: [Feh](https://feh.finalrewind.org/) - Image viewer and wallpaper setter
 - **Lock Screen**: [i3lock-color](https://github.com/Raymo111/i3lock-color) - Improved screen locker
-- **Shell**: [Zsh](https://www.zsh.org/) with [Powerlevel10k](https://github.com/romkatv/powerlevel10k)
-- **Terminal Tools**: [lsd](https://github.com/Peltoche/lsd), [bat](https://github.com/sharkdp/bat), [ranger](https://github.com/ranger/ranger)
+
+### Terminal Components (Optional)
+- **Shell**: [Zsh](https://www.zsh.org/) with enhanced configuration
+- **Prompt**: [Powerlevel10k](https://github.com/romkatv/powerlevel10k) - Fast and customizable prompt
+- **File Listing**: [lsd](https://github.com/Peltoche/lsd) - Modern ls replacement with colors and icons
+- **File Viewer**: [bat](https://github.com/sharkdp/bat) - Cat with syntax highlighting
+- **File Manager**: [ranger](https://github.com/ranger/ranger) - Console file manager
+- **Editor**: [Neovim](https://neovim.io/) - Hyperextensible text editor
+- **Fuzzy Finder**: [fzf](https://github.com/junegunn/fzf) - Command-line fuzzy finder
+- **Plugins**: Syntax highlighting, autosuggestions, and productivity enhancements
 
 ## 📋 Prerequisites
 
@@ -49,40 +93,39 @@ A complete, automated installation system for a modern tiling window manager des
 - User account with sudo access
 - Internet connection for downloading packages
 
-## 🚀 Quick Start
+## � Installation
 
-### Check System Compatibility
+### Quick Setup
 ```bash
+# Check system compatibility
 make check-deps
-```
 
-### Install ZUI with Default Theme
-```bash
+# Full installation (UI + Terminal)
 make install
-```
 
-### Install with Specific Theme
-```bash
+# Or specify a theme
 make install THEME=galaxy
-# or
-make install THEME=nord
-# or  
-make install THEME=haxor
 ```
 
-### Manual Installation (Advanced)
+### Modular Installation
+
+**UI Only** (preserve your terminal setup):
 ```bash
-# Install dependencies
-make install-deps
-
-# Install core components  
 make install-core
+make install-theme THEME=nord
+```
 
-# Install theme
-make install-theme THEME=galaxy
+**Terminal Only** (enhance shell without UI):
+```bash
+make install-core      # Minimal core required
+make install-terminal
+```
 
-# Run post-install setup
-make post-install
+**Step by Step** (maximum control):
+```bash
+make install-core        # Install UI components
+make install-terminal    # Configure terminal (optional)
+make install-theme THEME=galaxy  # Apply theme
 ```
 
 ## 🎨 Theme Management
@@ -106,6 +149,69 @@ zui-theme apply nord
 # Copy existing theme as template
 cp -r themes/galaxy themes/mytheme
 # Edit configurations in themes/mytheme/
+```
+
+## 💻 Terminal Configuration
+
+ZUI provides optional terminal enhancement that works independently from UI themes.
+
+### Features
+- **Powerlevel10k**: Beautiful, fast zsh prompt
+- **Enhanced Shell**: Zsh with useful plugins and modern tools
+- **Backup Protection**: Preserves existing shell configurations
+- **Independence**: Works with or without ZUI themes
+
+### Installation
+```bash
+make install-terminal
+```
+
+**What happens:**
+1. Backs up existing `.zshrc` and `.p10k.zsh` files
+2. Installs Powerlevel10k and modern CLI tools 
+3. Creates enhanced shell configuration
+4. Symlinks to `~/.zui/shell/` configs
+
+**Note**: Terminal configuration is completely optional and works independently from themes.
+
+The terminal configuration is **completely independent** from UI themes:
+- Installing/changing themes won't affect your terminal setup
+- Terminal configuration works without any theme installed
+- P10k configuration comes from terminal installation, not themes
+- You can have different users with different terminal setups
+
+## 🔧 Configuration Management
+
+### Configuration Locations
+```
+~/.config/bspwm/           # Window manager settings
+~/.config/polybar/         # Status bars  
+~/.config/sxhkd/           # Keybindings
+~/.config/rofi/            # Application launcher
+~/.config/picom/           # Compositor effects
+~/.zui/                    # ZUI installation directory
+~/.zui/shell/              # Default terminal configurations
+~/.p10k.zsh               # Your active P10k config (if installed)
+~/.zshrc                  # Your active zsh config (if installed)
+```
+
+### Terminal Configuration Preservation
+ZUI respects your existing terminal setup:
+
+- **Existing configurations**: If you already have `~/.zshrc` or `~/.p10k.zsh`, theme installation won't overwrite them
+- **Clean installations**: New users get default terminal configurations automatically
+- **Modular updates**: You can update UI themes without affecting terminal settings
+- **Independent terminal**: Terminal configuration works with or without ZUI themes
+
+### Switching Between Themes
+```bash
+# Safely switch themes (preserves terminal config)
+make install-theme THEME=nord
+make install-theme THEME=galaxy
+make install-theme THEME=haxor
+
+# Update just terminal if needed
+make install-terminal
 ```
 
 ## ⌨️ Default Keybindings
@@ -136,11 +242,10 @@ cp -r themes/galaxy themes/mytheme
 
 ## 🛠️ Customization
 
-### Configuration Locations
-- **ZUI Directory**: `~/.zui/`
-- **Current Theme**: `~/.zui/current_theme/` (symlink)
+### Configuration Files
 - **System Config**: `~/.zui/common/system/config.yml`
-- **User Configs**: `~/.config/` (symlinked to ZUI themes)
+- **Shell Config**: `~/.zui/shell/` 
+- **Theme Configs**: `~/.config/` (bspwm, polybar, rofi, etc.)
 
 ### Multi-Monitor Setup
 Edit `~/.zui/common/system/config.yml`:
@@ -149,49 +254,12 @@ Edit `~/.zui/common/system/config.yml`:
 monitors:
   HDMI-1:
     resolution: 1920x1080
-    rotate: normal
     main: 1
     workspaces: [1, 2, 3, 4, 5]
   eDP-1:
     resolution: 1920x1080
-    rotate: normal
     position: left
     workspaces: [6, 7, 8, 9, 0]
-```
-
-### Audio Device Configuration
-```yaml
-audio:
-  alsa_output.pci-0000_00_1f.3.analog-stereo:
-    alias: "Speakers"
-    type: speakers
-  alsa_output.usb-Device_Name:
-    alias: "Headphones" 
-    type: headset
-```
-
-## 🧪 Testing & Validation
-
-### Run All Tests
-```bash
-make test
-```
-
-### Run Specific Tests
-```bash
-# Core functionality
-make test-core
-
-# Configuration validation
-make test-config
-
-# Integration tests (requires running session)
-make test-integration
-```
-
-### Lint Shell Scripts
-```bash
-make lint
 ```
 
 ## 🔄 Maintenance
@@ -221,81 +289,51 @@ make clean
 
 ## 🗑️ Uninstallation
 
-### Complete Removal
+### UI-Focused Removal (Recommended)
 ```bash
 make uninstall
 ```
 
 This will:
-- Remove ZUI directory and configurations
-- Restore backed up configurations (if available)
+- Remove ZUI directory and UI configurations
 - Remove system rules and desktop entries
-- Preserve user data and installed packages
+- **Preserve terminal configurations** (.zshrc, .p10k.zsh, shell tools)
+- Restore backed up configurations (if available)
+- Keep user data and most installed packages
 
-### Manual Cleanup
-If you need to remove installed packages:
+### Complete Terminal Cleanup (Optional)
+If you also want to remove terminal configurations:
+```bash
+# After running make uninstall, manually remove:
+rm ~/.zshrc ~/.p10k.zsh
+rm -rf ~/powerlevel10k/
+
+# Restore backups if they exist
+if [ -f ~/.zshrc.backup ]; then mv ~/.zshrc.backup ~/.zshrc; fi
+if [ -f ~/.p10k.zsh.backup ]; then mv ~/.p10k.zsh.backup ~/.p10k.zsh; fi
+
+# Optional: Remove installed CLI tools
+sudo apt remove lsd bat ranger neovim fzf
+```
+
+### Manual Package Cleanup
+If you need to remove installed packages (be careful!):
 ```bash
 # Remove window manager components (optional)
 sudo apt remove bspwm sxhkd polybar rofi dunst picom
 
 # Remove development tools (be careful!)
 sudo apt remove build-essential cmake
+
+# Remove terminal tools (optional)
+sudo apt remove zsh lsd bat ranger neovim fzf
 ```
 
-## 🐛 Troubleshooting
-
-### Common Issues
-
-**ZUI doesn't start after login**
-- Ensure you selected "bspwm" session in your display manager
-- Check if all dependencies are installed: `make check-deps`
-- Verify installation: `make test`
-
-**Polybar not showing**
-- Check polybar configuration: `polybar --list-monitors`
-- Restart polybar: `~/.config/polybar/launch.sh`
-- Check logs: `journalctl --user -u polybar`
-
-**Audio controls not working**
-- Update audio configuration in `~/.zui/common/system/config.yml`
-- List audio devices: `pactl list sinks`
-- Restart polybar after audio config changes
-
-**Wallpaper not loading**
-- Check wallpaper link: `ls -la ~/.zui/current_theme/wallpapers/current_wallpaper`
-- Manually set: `feh --bg-fill /path/to/wallpaper.jpg`
-
-### Log Files
-- Installation logs: `/tmp/zui/install_deps.log`
-- System logs: `journalctl --user`
-- Application logs: `~/.local/share/` (various applications)
-
-### Getting Help
-1. Check this README and documentation
-2. Run diagnostics: `make check-deps && make test`
-3. Check logs for error messages
-4. Open an issue with system info and error logs
+**Note**: The default uninstall preserves terminal configurations since they're user-specific and may be used outside of ZUI.
 
 ## 🤝 Contributing
 
-### Development Setup
-```bash
-# Clone repository
-git clone https://github.com/zurdi15/zui-linux.git
-cd zui-linux
-
-# Install development dependencies
-make install-deps
-
-# Run tests
-make test
-
-# Format code
-make format
-
-# Validate configurations
-make validate
-```
+We welcome contributions! Here's how you can help:
 
 ### Adding New Themes
 1. Copy existing theme: `cp -r themes/galaxy themes/newtheme`
@@ -303,11 +341,10 @@ make validate
 3. Test theme: `make install-theme THEME=newtheme`
 4. Submit pull request
 
-### Code Style
-- Use shellcheck for shell scripts: `make lint`
+### Code Contributions
 - Follow existing code patterns and structure
-- Add tests for new functionality
-- Update documentation
+- Test your changes before submitting
+- Update documentation as needed
 
 ## 📄 License
 
