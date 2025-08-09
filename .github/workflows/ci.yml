@@ -1,0 +1,275 @@
+name: CI
+
+on:
+  push:
+    branches: [ master, main, develop ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  lint:
+    name: Lint Shell Scripts
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install shellcheck
+      run: sudo apt-get update && sudo apt-get install -y shellcheck
+      
+    - name: Run shellcheck
+      run: |
+        echo "Running shellcheck on all shell scripts..."
+        find . -name "*.sh" -type f -print0 | xargs -0 shellcheck
+        
+    - name: Check main install script
+      run: |
+        if [ -f "install" ]; then
+          shellcheck install
+        fi
+
+  validate-structure:
+    name: Validate Project Structure
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Check required directories
+      run: |
+        echo "Checking project structure..."
+        
+        # Check main directories
+        for dir in scripts themes common redist; do
+          if [ ! -d "$dir" ]; then
+            echo "❌ Missing required directory: $dir"
+            exit 1
+          else
+            echo "✅ Found directory: $dir"
+          fi
+        done
+        
+        # Check required files
+        for file in Makefile README.md CHANGELOG.md; do
+          if [ ! -f "$file" ]; then
+            echo "❌ Missing required file: $file"
+            exit 1
+          else
+            echo "✅ Found file: $file"
+          fi
+        done
+        
+        echo "Project structure validation passed!"
+        
+    - name: Check script executability
+      run: |
+        echo "Checking script permissions..."
+        find scripts -name "*.sh" -type f ! -executable | while read -r script; do
+          echo "❌ Script not executable: $script"
+          exit 1
+        done || {
+          echo "Some scripts are not executable"
+          exit 1
+        }
+        echo "All scripts are properly executable"
+
+  validate-themes:
+    name: Validate Themes
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Check theme structure
+      run: |
+        echo "Validating theme structures..."
+        
+        for theme_dir in themes/*/; do
+          theme=$(basename "$theme_dir")
+          echo "Checking theme: $theme"
+          
+          # Check required theme directories
+          required_dirs=(
+            "wallpapers"
+            "polybar"  
+            "rofi"
+            "dunst"
+          )
+          
+          for dir in "${required_dirs[@]}"; do
+            if [ ! -d "$theme_dir$dir" ]; then
+              echo "⚠️  Theme $theme missing directory: $dir"
+            else
+              echo "✅ Theme $theme has directory: $dir"
+            fi
+          done
+          
+          # Check for wallpapers
+          if [ ! -d "$theme_dir/wallpapers" ] || [ -z "$(ls -A "$theme_dir/wallpapers" 2>/dev/null)" ]; then
+            echo "⚠️  Theme $theme has no wallpapers"
+          fi
+        done
+
+  test-installation:
+    name: Test Installation Process
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          git \
+          wget \
+          curl \
+          pkg-config \
+          cmake \
+          shellcheck
+          
+    - name: Test dependency checker
+      run: |
+        chmod +x scripts/check_deps.sh
+        ./scripts/check_deps.sh report || true
+        
+    - name: Test Makefile targets
+      run: |
+        echo "Testing Makefile help target..."
+        make help
+        
+        echo "Testing clean target..."
+        make clean
+        
+        echo "Testing lint target..."
+        make lint || true
+        
+    - name: Validate configuration files
+      run: |
+        echo "Checking configuration file syntax..."
+        
+        # Check shell script syntax
+        find . -name "*.sh" -type f -exec bash -n {} \;
+        
+        # Check main install script
+        if [ -f "install" ]; then
+          bash -n install
+        fi
+        
+        echo "Configuration validation completed"
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Check for common security issues
+      run: |
+        echo "Running security checks..."
+        
+        # Check for hardcoded credentials
+        if grep -r -i "password\|secret\|key" --include="*.sh" --include="*.yml" --include="*.yaml" . | grep -v "# " | grep -v "PASSWORD" | grep -v "EXAMPLE"; then
+          echo "❌ Potential hardcoded credentials found"
+          exit 1
+        fi
+        
+        # Check for dangerous commands
+        dangerous_patterns=(
+          "rm -rf /"
+          "chmod 777"
+          "chown.*root"
+          "sudo.*rm.*-rf.*/"
+        )
+        
+        for pattern in "${dangerous_patterns[@]}"; do
+          if grep -r "$pattern" --include="*.sh" .; then
+            echo "❌ Potentially dangerous pattern found: $pattern"
+            exit 1
+          fi
+        done
+        
+        # Check file permissions
+        find . -type f -perm /o+w | while read -r file; do
+          echo "⚠️  World-writable file: $file"
+        done
+        
+        echo "✅ Basic security checks passed"
+
+  documentation:
+    name: Validate Documentation
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Check documentation completeness
+      run: |
+        echo "Validating documentation..."
+        
+        # Check README sections
+        required_sections=(
+          "Installation"
+          "Usage"
+          "Configuration"
+          "Contributing"
+          "License"
+        )
+        
+        for section in "${required_sections[@]}"; do
+          if ! grep -qi "$section" README.md; then
+            echo "⚠️  README missing section: $section"
+          else
+            echo "✅ README has section: $section"
+          fi
+        done
+        
+        # Check for TODO/FIXME comments
+        if grep -r "TODO\|FIXME\|XXX" --include="*.sh" --include="*.md" .; then
+          echo "⚠️  Found TODO/FIXME items (not necessarily bad)"
+        fi
+        
+        # Check for broken internal links (basic)
+        if grep -o '\[.*\]([^)]*\.md)' README.md | while read -r link; then
+          file=$(echo "$link" | sed 's/.*(\([^)]*\)).*/\1/')
+          if [ ! -f "$file" ]; then
+            echo "❌ Broken internal link: $file"
+            exit 1
+          fi
+        done; then
+          echo "✅ Internal links validated"
+        fi
+
+  integration-test:
+    name: Integration Test (Basic)
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Test scripts in dry-run mode
+      run: |
+        echo "Testing scripts with dry-run or help options..."
+        
+        # Test help options where available
+        for script in scripts/*.sh; do
+          echo "Testing script: $script"
+          
+          if grep -q "show_usage\|help" "$script"; then
+            "$script" --help || "$script" help || true
+          fi
+          
+          # Basic syntax validation
+          bash -n "$script"
+        done
+        
+        echo "Script validation completed"

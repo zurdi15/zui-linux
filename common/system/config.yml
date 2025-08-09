@@ -23,7 +23,7 @@ audio:
     alias: Speakers
     type: speakers
   alsa_output.pci-0000_00_1f.3.analog-stereo:
-    alias: "Internal speakers"
+    alias: Internal speakers
     type: speakers
   # blacklist to not using devices on audio rotation with comma separated
   blacklist: alsa_output.usb-Corsa_ir_Components_Inc._Corsair_ST100_Headset_Outpu_t_v0.6-00.analog-stereo
