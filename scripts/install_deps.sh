@@ -150,7 +150,7 @@ install_polybar() {
     cd "${TMP_PATH}/polybar"
     mkdir -p build && cd build/
     cmake ..
-    make -j$(nproc)
+    make -j"$(nproc)"
     sudo make install || {
         log_error "Failed to install polybar"
         exit 1
@@ -271,8 +271,8 @@ main() {
     install_audio_tools
     install_utilities
     install_dunst
-    install_applications
-    install_streamdeck
+    # install_applications
+    # install_streamdeck
     cleanup
     
     log_success "All dependencies installed successfully!"

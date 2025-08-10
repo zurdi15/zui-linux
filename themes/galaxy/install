@@ -1,7 +1,0 @@
-#!/bin/bash
-
-TMP_PATH=/tmp/zui
-
-sudo apt-get install dconf-cli
-git clone https://github.com/dracula/gnome-terminal ${TMP_PATH}/dracula-gnome-terminal
-cd ${TMP_PATH}/dracula-gnome-terminal

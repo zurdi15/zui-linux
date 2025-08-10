@@ -7,6 +7,9 @@ ZUI_PATH=${HOME}/.zui
 # init sxhkd
 pgrep -x sxhkd > /dev/null || sxhkd &
 
+# init dunst notification daemon
+pgrep -x dunst > /dev/null || dunst &
+
 bash ${ZUI_PATH}/common/system/modules/monitors/interface.sh
 
 # windows configuration

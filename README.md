@@ -225,7 +225,6 @@ make install-terminal
 | `Super + Q` | Power menu |
 | `Super + L` | Lock screen |
 | `Super + N` | Network menu |
-| `Super + Shift + F` | Firefox |
 | `Alt + Tab` | Cycle windows |
 | `Super + 1-9` | Switch to desktop |
 | `Super + Shift + 1-9` | Move window to desktop |
