@@ -1,16 +1,24 @@
-# Monitors
-# use xrandr --listmonitors to get your monitor's ID
-monitors:
-  HDMI-2:
-    resolution: 1920x1080
-    rotate: normal
-    main: 1
-    workspaces: [1, 2, 3, 4, 5]
-  eDP-1:
-    resolution: 1920x1080
-    rotate: normal
-    position: left
-    workspaces: [6, 7, 8, 9, 0]
+# Monitors Configuration
+# The system now automatically detects monitor resolutions and applies appropriate scaling
+# You only need to specify monitors here if you want to override the automatic configuration
+# Use xrandr --listmonitors to get your monitor's ID
+monitors: {}
+  # Example manual configuration (optional):
+  # HDMI-2:
+  #   resolution: 1920x1080
+  #   rotate: normal
+  #   main: 1
+  #   workspaces: [1, 2, 3, 4, 5]
+  # eDP-1:
+  #   resolution: 1920x1200  # Auto-scaled from 4K
+  #   rotate: normal
+  #   position: left
+  #   workspaces: [6, 7, 8, 9, 0]
+
+# Note: The system will automatically:
+# - Detect 4K displays and apply 200% scaling (e.g., 3840x2400 -> 1920x1200)
+# - Assign workspaces 1-5 to external monitors, 6-0 to built-in displays
+# - Set external monitors as primary, built-in as secondary
     
 
 # Audio
