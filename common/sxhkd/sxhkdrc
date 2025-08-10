@@ -26,7 +26,7 @@ super + q
 	
 # network connection panel
 super + n
-	${HOME}/.zui/common/system/modules/internet/interface.sh
+	${HOME}/.zui/common/system/modules/network/interface.sh
 
 # lock screen
 super + l
