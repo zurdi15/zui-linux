@@ -3,56 +3,116 @@ configuration {
 }
 
 * {
-  background-color: #472B7A;
+  // Galaxy theme colors
+  bg-main: #472B7A;
   bg-alt: #6E46A4;
+  bg-light: #9B6BDF;
   fg: #F8F8F2;
-
-  fg-selected: #F8F8F2;
-  prompt: #F8F8F2;
-
+  accent: #E4F34A;
+  success: #42E66C;
+  warning: #EFA554;
+  error: #E64747;
+  info: #75D7EC;
+  
+  background-color: transparent;
+  text-color: @fg;
+  
   border: 0;
-  lines: 12;
-  padding: 0;
   margin: 0;
+  padding: 0;
   spacing: 0;
 }
 
 window {
-  width: 20%;
+  width: 30%;
+  height: 50%;
+  background-color: @bg-main;
+  border: 2px;
+  border-color: @bg-light;
+  border-radius: 12px;
   transparency: "real";
 }
 
 mainbox {
   children: [inputbar, listview];
-}
-
-listview {
-  columns: 1;
-}
-
-element {
-  padding: 12;
-  orientation: vertical;
-  text-color: @fg;
-}
-
-element selected {
-  background-color: @bg-alt;
-  text-color: @fg-selected;
+  background-color: transparent;
+  padding: 15px;
+  spacing: 15px;
 }
 
 inputbar {
-  background-color: @background;
   children: [prompt, entry];
+  background-color: @bg-alt;
+  border-radius: 8px;
+  padding: 8px;
+  spacing: 8px;
 }
 
 prompt {
   enabled: true;
-  padding: 12 0 0 12;
-  text-color: @prompt;
+  background-color: transparent;
+  text-color: @info;
+  padding: 8px 0px;
+  font: "Iosevka Nerd Font Bold 13";
 }
 
 entry {
-  padding: 12;
-  text-color: @prompt;
+  background-color: transparent;
+  text-color: @fg;
+  placeholder: "Search networks...";
+  placeholder-color: @bg-light;
+  cursor: text;
+  padding: 8px 0px;
+}
+
+listview {
+  columns: 1;
+  lines: 6;
+  cycle: false;
+  dynamic: true;
+  scrollbar: false;
+  layout: vertical;
+  reverse: false;
+  fixed-height: false;
+  fixed-columns: true;
+  background-color: transparent;
+  spacing: 4px;
+  margin: 0px;
+  padding: 0px;
+}
+
+element {
+  orientation: horizontal;
+  children: [element-text];
+  background-color: transparent;
+  text-color: @fg;
+  border-radius: 6px;
+  padding: 12px;
+  spacing: 8px;
+  border: 0px;
+}
+
+element normal.normal {
+  background-color: transparent;
+  text-color: @fg;
+}
+
+element alternate.normal {
+  background-color: transparent;
+  text-color: @fg;
+}
+
+element selected.normal {
+  background-color: @bg-light;
+  text-color: @fg;
+  border: 1px;
+  border-color: @info;
+}
+
+element-text {
+  background-color: transparent;
+  text-color: inherit;
+  cursor: inherit;
+  vertical-align: 0.5;
+  horizontal-align: 0.0;
 }

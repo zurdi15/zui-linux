@@ -1,59 +1,91 @@
 configuration {
   font: "Iosevka Nerd Font 13";
+  show-icons: false;
 }
 
 * {
-  background-color: #472B7A;
+  // Galaxy theme colors
+  bg-main: #472B7A;
   bg-alt: #6E46A4;
+  bg-light: #9B6BDF;
   fg: #F8F8F2;
-
-  fg-selected: #F8F8F2;
-  prompt: #F8F8F2;
-
+  accent: #E4F34A;
+  success: #42E66C;
+  warning: #EFA554;
+  error: #E64747;
+  info: #75D7EC;
+  
+  background-color: transparent;
+  text-color: @fg;
+  
   border: 0;
-  lines: 12;
-  padding: 0;
   margin: 0;
+  padding: 0;
   spacing: 0;
 }
 
 window {
-  width: 6.5%;
+  width: 12%;
+  background-color: @bg-main;
+  border: 2px;
+  border-color: @bg-light;
+  border-radius: 12px;
   transparency: "real";
+  location: center;
+  anchor: center;
 }
 
 mainbox {
   children: [listview];
+  background-color: transparent;
+  padding: 15px;
+  spacing: 0px;
 }
 
 listview {
   lines: 5;
   columns: 1;
+  cycle: false;
+  dynamic: false;
+  scrollbar: false;
+  layout: vertical;
+  reverse: false;
+  fixed-height: true;
+  fixed-columns: true;
+  background-color: transparent;
+  spacing: 6px;
+  margin: 0px;
+  padding: 0px;
 }
 
 element {
-  padding: 15;
   orientation: vertical;
+  children: [element-text];
+  background-color: transparent;
+  text-color: @fg;
+  border-radius: 8px;
+  padding: 18px;
+  spacing: 0px;
+  border: 0px;
+}
+
+element normal.normal {
+  background-color: transparent;
   text-color: @fg;
 }
 
-element selected {
-  background-color: @bg-alt;
-  text-color: @fg-selected;
+element selected.normal {
+  background-color: @bg-light;
+  text-color: @fg;
+  border: 2px;
+  border-color: @accent;
 }
 
-inputbar {
-  background-color: @background;
-  children: [prompt, entry];
-}
-
-prompt {
-  enabled: true;
-  padding: 12 0 0 12;
-  text-color: @prompt;
-}
-
-entry {
-  padding: 12;
-  text-color: @prompt;
+element-text {
+  background-color: transparent;
+  text-color: inherit;
+  cursor: inherit;
+  vertical-align: 0.5;
+  horizontal-align: 0.5;
+  font: "Iosevka Nerd Font Bold 14";
 }
