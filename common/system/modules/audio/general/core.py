@@ -65,6 +65,9 @@ def send_notification(config: dict = {}, msg: str = "") -> None:
 
 def volume(config: dict, action: str) -> None:
     VOLUME_STEP: float = 0.05
+    MIN_VOLUME: float = 0.0  # 0%
+    MAX_VOLUME: float = 1.0  # 100%
+    
     with pulsectl.Pulse('volume-increaser') as pulse:
         for s in pulse.sink_list():
             if pulse.server_info().default_sink_name == s.name:
@@ -72,12 +75,15 @@ def volume(config: dict, action: str) -> None:
             else:
                 continue
         current_volume = sink.volume.value_flat
+        
         if action == 'up':
-            pulse.volume_set_all_chans(sink, current_volume+VOLUME_STEP)
-            send_notification(msg=f"up {int((current_volume+VOLUME_STEP)*100)}%")
+            new_volume = min(current_volume + VOLUME_STEP, MAX_VOLUME)
+            pulse.volume_set_all_chans(sink, new_volume)
+            send_notification(msg=f"up {int(new_volume * 100)}%")
         elif action == 'down':
-            pulse.volume_set_all_chans(sink, current_volume-VOLUME_STEP)
-            send_notification(msg=f"down {int((current_volume-VOLUME_STEP)*100)}%")
+            new_volume = max(current_volume - VOLUME_STEP, MIN_VOLUME)
+            pulse.volume_set_all_chans(sink, new_volume)
+            send_notification(msg=f"down {int(new_volume * 100)}%")
         elif action == 'mute':
             if sink.mute:
                 send_notification(msg="unmuted")
