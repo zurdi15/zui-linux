@@ -83,7 +83,8 @@ install_system_packages() {
         libxkbcommon-dev libxkbcommon-x11-dev libstartup-notification0-dev libxcb-xrm0 \
         libxcb-xrm-dev libxcb-shape0 libxcb-shape0-dev pavucontrol python3-pip \
         libhidapi-libusb0 libx11-dev libxinerama-dev libxss-dev libglib2.0-dev \
-        libgtk-3-dev libxdg-basedir-dev libnotify-dev curl git wget rsync || {
+        libgtk-3-dev libxdg-basedir-dev libnotify-dev libnotify-bin python3-pulsectl \
+        curl git wget rsync || {
         log_error "Failed to install system packages"
         exit 1
     }
