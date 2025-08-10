@@ -60,7 +60,9 @@ def send_notification(config: dict = {}, msg: str = "") -> None:
         subprocess.Popen(['polybar-msg', 'action', '#audio-icon.hook.0'])
         subprocess.Popen(['notify-send', 'Audio', f"Changed to {get_current_sink_name(config)} {get_current_sink_icon(config)}"])
     else:
-        subprocess.Popen(['notify-send', 'Audio', f"Volume {msg}", '-h', 'string:x-canonical-private-synchronous:anything'])
+        subprocess.Popen(['notify-send', 'Audio', f"Volume {msg}", 
+                         '-h', 'string:x-canonical-private-synchronous:anything',
+                         '-h', 'int:transient:1'])
 
 
 def volume(config: dict, action: str) -> None:
