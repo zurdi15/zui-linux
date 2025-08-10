@@ -127,6 +127,13 @@ create_desktop_entry() {
         fi
     fi
     
+
+#     window-manager
+# preferences-desktop-display
+# applications-system
+# preferences-system
+
+
     if [[ ! -f "$desktop_entry" ]]; then
         if sudo tee "$desktop_entry" > /dev/null 2>&1 <<EOF; then
 [Desktop Entry]
@@ -135,6 +142,7 @@ Comment=Binary space partitioning window manager
 Exec=bspwm
 TryExec=bspwm
 Type=Application
+Icon=preferences-system-windows
 X-LightDM-DesktopName=bspwm
 DesktopNames=bspwm
 Keywords=tiling;wm;windowmanager;window;manager;

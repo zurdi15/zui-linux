@@ -163,8 +163,7 @@ install_polybar() {
 # Install audio components
 install_audio_tools() {
     log_info "Installing audio tools..."
-    pip3 install pulsectl || log_warn "Failed to install pulsectl via pip3"
-    
+
     if [[ ! -d "${TMP_PATH}/zscroll" ]]; then
         git clone https://github.com/noctuid/zscroll "${TMP_PATH}/zscroll"
     fi
