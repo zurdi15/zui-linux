@@ -1,59 +1,91 @@
 configuration {
   font: "Iosevka Nerd Font 13";
+  show-icons: false;
 }
 
 * {
-  background-color: #000000;
-  bg-alt: #00ff00;
+  // Haxor theme colors
+  bg-main: #000000;
+  bg-alt: #1a1a1a;
+  bg-light: #333333;
   fg: #00ff00;
-
-  fg-selected: #000000;
-  prompt: #00ff00;
-
+  accent: #00ff00;
+  success: #00ff00;
+  warning: #fff500;
+  error: #ff0000;
+  info: #ff9900;
+  
+  background-color: transparent;
+  text-color: @fg;
+  
   border: 0;
-  lines: 12;
-  padding: 0;
   margin: 0;
+  padding: 0;
   spacing: 0;
 }
 
 window {
-  width: 6.5%;
+  width: 12%;
+  background-color: @bg-main;
+  border: 2px;
+  border-color: @accent;
+  border-radius: 8px;
   transparency: "real";
+  location: center;
+  anchor: center;
 }
 
 mainbox {
   children: [listview];
+  background-color: transparent;
+  padding: 15px;
+  spacing: 0px;
 }
 
 listview {
   lines: 5;
   columns: 1;
+  cycle: false;
+  dynamic: false;
+  scrollbar: false;
+  layout: vertical;
+  reverse: false;
+  fixed-height: true;
+  fixed-columns: true;
+  background-color: transparent;
+  spacing: 4px;
+  margin: 0px;
+  padding: 0px;
 }
 
 element {
-  padding: 15;
   orientation: vertical;
+  children: [element-text];
+  background-color: transparent;
+  text-color: @fg;
+  border-radius: 4px;
+  padding: 18px;
+  spacing: 0px;
+  border: 0px;
+}
+
+element normal.normal {
+  background-color: transparent;
   text-color: @fg;
 }
 
-element selected {
-  background-color: @bg-alt;
-  text-color: @fg-selected;
+element selected.normal {
+  background-color: @bg-light;
+  text-color: @accent;
+  border: 2px;
+  border-color: @accent;
 }
 
-inputbar {
-  background-color: @background;
-  children: [prompt, entry];
-}
-
-prompt {
-  enabled: true;
-  padding: 12 0 0 12;
-  text-color: @prompt;
-}
-
-entry {
-  padding: 12;
-  text-color: @prompt;
+element-text {
+  background-color: transparent;
+  text-color: inherit;
+  cursor: inherit;
+  vertical-align: 0.5;
+  horizontal-align: 0.5;
+  font: "Iosevka Nerd Font Bold 14";
 }
