@@ -258,7 +258,7 @@ main() {
     # Check if ZUI is installed
     if [[ ! -d "$ZUI_PATH" ]]; then
         log_error "ZUI core installation not found at: $ZUI_PATH"
-        log_error "Please install ZUI core first with: make install-core"
+        log_error "Please install ZUI core first with: zui.sh install-core"
         exit 1
     fi
     
