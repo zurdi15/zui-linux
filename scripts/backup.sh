@@ -108,9 +108,14 @@ EOF
 
 # Main function
 main() {
+    echo ""
+    echo "================================"
+    echo -e "${BLUE}ZUI Backup current configuration${NC}"
+    echo "================================"
+    echo ""
+
     local backup_dir="${1:-}"
     
-    log_info "Starting configuration backup..."
     create_backup "$backup_dir"
 }
 

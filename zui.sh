@@ -182,7 +182,6 @@ uninstall_command() {
 
 # Maintenance commands
 clean_command() {
-    log_info "Cleaning temporary files..."
     rm -rf /tmp/zui
     find . -name "*.log" -delete 2>/dev/null || true
     find . -name "*.tmp" -delete 2>/dev/null || true
@@ -190,12 +189,10 @@ clean_command() {
 }
 
 test_command() {
-    log_info "Running tests..."
     run_script "test/run_tests.sh" || true
 }
 
 lint_command() {
-    log_info "Running shellcheck..."
     if command -v shellcheck >/dev/null 2>&1; then
         find . -name "*.sh" -exec shellcheck {} \;
         log_success "Linting completed!"
@@ -211,12 +208,10 @@ check_deps_command() {
 
 # Backup and restore
 backup_command() {
-    log_info "Creating backup at $BACKUP_DIR..."
     run_script "backup.sh" "$BACKUP_DIR" || true
 }
 
 restore_command() {
-    log_info "Restoring from backup at $BACKUP_DIR..."
     run_script "restore.sh" "$BACKUP_DIR"
 }
 

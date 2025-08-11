@@ -141,9 +141,10 @@ configure_network_triggers() {
 
 # Main installation function
 main() {
-    echo "=============================="
+    echo ""
+    echo "====================="
     echo -e "${BLUE}ZUI Core Installation${NC}"
-    echo "=============================="
+    echo "====================="
     echo ""
 
     # Create temp directory if needed

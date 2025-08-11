@@ -114,6 +114,7 @@ check_display() {
 
 # Generate report
 generate_report() {
+    echo ""
     echo "==========================="
     echo -e "${BLUE}ZUI Dependency Check Report${NC}"
     echo -e "===========================\n"

@@ -298,7 +298,7 @@ install_audio_tools() {
 
     if [[ ! -d "${TMP_PATH}/zscroll" ]]; then
         if run_with_progress "Cloning zscroll repository" git clone https://github.com/noctuid/zscroll "${TMP_PATH}/zscroll"; then
-            if run_with_progress_interactive "Installing zscroll" bash -c "cd '${TMP_PATH}/zscroll' && sudo python3 setup.py install >> '${LOG_FILE}' 2>&1"; then
+            if run_with_progress_interactive "Installing zscroll" bash -c "cd '${TMP_PATH}/zscroll' && sudo python3 setup.py install && sudo chown -R ${USER}:${USER} '${TMP_PATH}/zscroll' >> '${LOG_FILE}' 2>&1"; then
                 track_software "zscroll (Text Scrolling Tool)"
             else
                 log_warn "Failed to install zscroll"
@@ -462,9 +462,10 @@ generate_summary() {
 
 # Main installation function
 main() {
-    echo "=============================="
+    echo ""
+    echo "============================="
     echo -e "${BLUE}ZUI Dependencies Installation${NC}"
-    echo "=============================="
+    echo "============================="
     echo ""
 
     # Create temp directory and log file

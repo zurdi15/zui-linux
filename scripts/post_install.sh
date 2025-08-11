@@ -266,9 +266,10 @@ check_compatibility() {
 
 # Main post-installation function
 main() {
-    echo "=============================="
+    echo ""
+    echo "====================="
     echo -e "${BLUE}ZUI Post Installation${NC}"
-    echo "=============================="
+    echo "====================="
     echo ""
     
     # Run post-installation tasks
