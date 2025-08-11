@@ -29,7 +29,7 @@ configuration {
 
 window {
   width: 35%;
-  height: 60%;
+  height: 65%;
   background-color: @bg-main;
   border: 2px;
   border-color: @bg-light;
