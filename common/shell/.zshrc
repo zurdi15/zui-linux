@@ -21,7 +21,7 @@ plugins=(
 )
 source /usr/share/zsh/zsh-plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source /usr/share/zsh/zsh-plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-source /usr/share/zsh/zsh-plugins/zsh-autocomplete/zsh-autocomplete.plugin.zsh
+#source /usr/share/zsh/zsh-plugins/zsh-autocomplete/zsh-autocomplete.plugin.zsh
 source /usr/share/zsh/zsh-plugins/zsh-sudo/zsh-sudo.zsh
 source $ZSH/oh-my-zsh.sh
 
