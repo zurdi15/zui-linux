@@ -141,8 +141,6 @@ configure_network_triggers() {
 
 # Main installation function
 main() {
-    log_info "Starting ZUI core installation..."
-    
     # Create temp directory if needed
     mkdir -p "${TMP_PATH}"
     
@@ -158,7 +156,7 @@ main() {
     log_info "Configuration directory: ${CONFIG_PATH}"
     log_info ""
     log_info "Next steps:"
-    log_info "- Install terminal configuration: zui.sh install-terminal"
+    log_info "- Install terminal configuration (optional): zui.sh install-terminal"
     log_info "- Install theme: zui.sh install-theme --theme <theme_name>"
 }
 

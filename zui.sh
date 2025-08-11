@@ -163,7 +163,6 @@ install_deps_command() {
 }
 
 install_core_command() {
-    log_info "Installing core components..."
     run_script "install_core.sh"
 }
 
@@ -214,7 +213,6 @@ lint_command() {
 }
 
 check_deps_command() {
-    log_info "Checking system dependencies..."
     run_script "check_deps.sh" || true
 }
 

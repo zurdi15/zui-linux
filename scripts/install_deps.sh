@@ -253,8 +253,6 @@ cleanup() {
 
 # Main installation function
 main() {
-    log_info "Starting ZUI dependencies installation..."
-    
     # Create temp directory and log file
     mkdir -p "${TMP_PATH}"
     touch "${LOG_FILE}"

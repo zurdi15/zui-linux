@@ -114,8 +114,6 @@ check_display() {
 
 # Generate report
 generate_report() {
-    log_info "Starting ZUI dependency check..."
-    
     echo ""
     echo "=============================="
     echo "ZUI Dependency Check Report"
@@ -155,17 +153,18 @@ generate_report() {
     done
     
     echo ""
-    echo "Results: $passed_checks/$total_checks checks passed"
-    echo ""
+    log_info "Results: $passed_checks/$total_checks checks passed"
     
     if [[ $passed_checks -eq $total_checks ]]; then
-        echo -e "${GREEN}✓ System is ready for ZUI installation${NC}"
+        log_info "${GREEN}System is ready for ZUI installation ✓ ${NC}"
+        log_info "Next steps:"
+        log_info "- Install dependencies: zui.sh install-deps"
         return 0
     elif [[ $passed_checks -ge $((total_checks * 3 / 4)) ]]; then
-        echo -e "${YELLOW}⚠ System mostly ready. Some optional components missing.${NC}"
+        log_warning -e "${YELLOW}⚠ System mostly ready. Some optional components missing.${NC}"
         return 1
     else
-        echo -e "${RED}✗ System not ready. Please install missing dependencies.${NC}"
+        log_error -e "${RED}✗ System not ready. Please install missing dependencies.${NC}"
         return 2
     fi
 }
