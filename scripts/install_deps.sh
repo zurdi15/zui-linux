@@ -455,7 +455,9 @@ generate_summary() {
     fi
     
     echo ""
-    echo -e "${BLUE}Installation Log:${NC} ${LOG_FILE}"
+    echo -e "${BLUE}Installation Log:${NC} ${LOG_FILE}\n"
+    log_info "Next steps:"
+    log_info "- Install core: zui.sh install-core"
 }
 
 # Main installation function
