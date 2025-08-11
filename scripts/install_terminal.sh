@@ -39,23 +39,22 @@ log_success() {
 
 # Check if user wants terminal configuration
 confirm_terminal_installation() {
-    echo -e "${YELLOW}Optional Terminal Configuration${NC}"
-    echo "ZUI can optionally configure your terminal with:"
-    echo "  • Zsh shell with enhanced plugins"
-    echo "  • Powerlevel10k theme"
-    echo "  • Modern CLI tools (lsd, bat, ranger, neovim)"
-    echo "  • Terminal configuration files (.zshrc, .p10k.zsh)"
+    log_info "ZUI can optionally configure your terminal with:"
+    log_info "- Zsh shell with enhanced plugins"
+    log_info "- Powerlevel10k theme"
+    log_info "- Modern CLI tools (lsd, bat, ranger, neovim)"
+    log_info "- Terminal configuration files (.zshrc, .p10k.zsh)"
     echo ""
-    echo "Note: This will modify your shell configuration."
-    echo "If you already have a customized terminal setup, you may want to skip this."
+    log_warn "Note: This will modify your shell configuration."
+    log_warn "If you already have a customized terminal setup, you may want to skip this."
     echo ""
     
     read -p "Install terminal configuration? [y/N]: " -n 1 -r
-    echo
+    echo ""
+    echo ""
     
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         log_info "Terminal installation skipped by user choice."
-        log_info "You can run this script later with: ./scripts/install_terminal.sh"
         exit 0
     fi
 }
@@ -253,7 +252,11 @@ configure_root_environment() {
 
 # Main installation function
 main() {
-    log_info "Starting ZUI terminal installation..."
+    echo ""
+    echo "========================="
+    echo -e "${BLUE}ZUI Terminal Installation${NC}"
+    echo "========================="
+    echo ""
     
     # Check if ZUI is installed
     if [[ ! -d "$ZUI_PATH" ]]; then
