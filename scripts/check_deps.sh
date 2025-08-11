@@ -169,19 +169,7 @@ generate_report() {
     fi
 }
 
-# Main function
-main() {
-    case "${1:-report}" in
-        "report"|"")
-            generate_report
-            ;;
-        *)
-            generate_report
-            ;;
-    esac
-}
-
 # Only run main if script is executed directly (not sourced)
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    main "$@"
+    generate_report
 fi
