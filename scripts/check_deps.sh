@@ -133,7 +133,7 @@ generate_report() {
         ["Applications"]="check_apps"
         ["Python Dependencies"]="check_python"
         ["Snap Package Manager"]="check_snap"
-        ["Display Server"]="check_display"
+        # ["Display Server"]="check_display"
     )
     
     # Run checks
