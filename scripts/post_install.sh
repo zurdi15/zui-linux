@@ -191,11 +191,11 @@ generate_summary() {
     
     # Check for potential issues
     if ! command -v bspwm &> /dev/null; then
-        log_warning "⚠️  Warning: bspwm command not found in PATH"
+        log_warn "⚠️  Warning: bspwm command not found in PATH"
     fi
     
     if [[ "$SHELL" != *"zsh" ]]; then
-        log_warning "⚠️  Warning: Default shell is not zsh. Run 'chsh -s /usr/bin/zsh' to change it."
+        log_warn "⚠️  Warning: Default shell is not zsh. Run 'chsh -s /usr/bin/zsh' to change it."
     fi
 }
 

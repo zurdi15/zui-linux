@@ -1,6 +1,7 @@
 #!/bin/bash
 # ZUI Terminal Installation Script
 # Optional terminal configuration and tools installation
+# TODO: install oh my zsh / p10k
 
 set -euo pipefail
 

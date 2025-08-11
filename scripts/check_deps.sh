@@ -161,10 +161,10 @@ generate_report() {
         log_info "- Install dependencies: zui.sh install-deps"
         return 0
     elif [[ $passed_checks -ge $((total_checks * 3 / 4)) ]]; then
-        log_warning -e "${YELLOW}⚠ System mostly ready. Some optional components missing.${NC}"
+        log_warn "${YELLOW}⚠ System mostly ready. Some optional components missing.${NC}"
         return 1
     else
-        log_error -e "${RED}✗ System not ready. Please install missing dependencies.${NC}"
+        log_error "${RED}✗ System not ready. Please install missing dependencies.${NC}"
         return 2
     fi
 }

@@ -165,7 +165,7 @@ install_system_packages() {
         libxcb-xrm-dev libxcb-shape0 libxcb-shape0-dev pavucontrol python3-pip \
         libhidapi-libusb0 libx11-dev libxinerama-dev libxss-dev libglib2.0-dev \
         libgtk-3-dev libxdg-basedir-dev libnotify-dev libnotify-bin python3-pulsectl \
-        curl git wget rsync; then
+        curl git wget rsync zsh; then
         log_error "Failed to install system packages"
         exit 1
     fi
