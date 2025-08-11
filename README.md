@@ -6,7 +6,7 @@
 
 A complete, automated installation system for a modern tiling window manager desktop environment based on **bspwm**. ZUI provides a beautiful, functional, and customizable desktop experience with multiple themes and modular installation options.
 
-## 🎯 Design Philosophy
+## Design Philosophy
 
 ZUI follows a **modular approach** that separates UI window manager components from terminal configuration:
 
@@ -23,7 +23,7 @@ This separation means you can:
 - Mix and match components as needed
 - Preserve your terminal customizations when changing UI themes
 
-## ✨ Features
+## Features
 
 ### 🏗️ **Modular Architecture**
 - **Component Independence**: UI and terminal configurations work separately
@@ -51,7 +51,7 @@ This separation means you can:
 - **Independent Installation**: Works with any window manager
 - **Theme Coordination**: Matches UI themes when installed together
 
-## 🖼️ Included Themes
+## Included Themes
 
 | Theme | Description | Screenshot |
 |-------|-------------|------------|
@@ -59,7 +59,7 @@ This separation means you can:
 | **Nord** | Clean Nordic-inspired color scheme | [TODO] |
 | **Haxor** | Cyberpunk/terminal aesthetic | [TODO] |
 
-## 🔧 Components
+## Components
 
 ### UI Components (Window Manager)
 - **Window Manager**: [bspwm](https://github.com/baskerville/bspwm) - Binary space partitioning window manager
@@ -81,7 +81,7 @@ This separation means you can:
 - **Fuzzy Finder**: [fzf](https://github.com/junegunn/fzf) - Command-line fuzzy finder
 - **Plugins**: Syntax highlighting, autosuggestions, and productivity enhancements
 
-## 📋 Prerequisites
+## Prerequisites
 
 ### System Requirements
 - **OS**: Ubuntu 20.04+ or Debian 11+ (primary support)
@@ -93,55 +93,54 @@ This separation means you can:
 - User account with sudo access
 - Internet connection for downloading packages
 
-## � Installation
+## Installation
 
 ### Quick Setup
 ```bash
 # Check system compatibility
-make check-deps
+zui.sh check-deps
 
 # Full installation (UI + Terminal)
-make install
+zui.sh install
 
 # Or specify a theme
-make install THEME=galaxy
+zui.sh install -t nord
 ```
 
 ### Modular Installation
 
 **UI Only** (preserve your terminal setup):
 ```bash
-make install-core
-make install-theme THEME=nord
+zui.sh install-ui-only
 ```
 
 **Terminal Only** (enhance shell without UI):
 ```bash
-make install-core      # Minimal core required
-make install-terminal
+zui.sh install-terminal
 ```
 
 **Step by Step** (maximum control):
 ```bash
-make install-core        # Install UI components
-make install-terminal    # Configure terminal (optional)
-make install-theme THEME=galaxy  # Apply theme
+zui.sh install-deps
+zui.sh install-core        # Install UI components
+zui.sh install-terminal    # Configure terminal (optional)
+zui.sh install-theme -t galaxy  # Apply theme
 ```
 
 ## 🎨 Theme Management
 
 ### List Available Themes
 ```bash
-make list-themes
+zui.sh list-themes
 # or
 zui-theme list
 ```
 
 ### Switch Themes
 ```bash
-make apply-theme THEME=nord
+zui.sh apply-theme -t nord
 # or
-zui-theme apply nord
+zui-theme nord
 ```
 
 ### Create New Theme
@@ -163,22 +162,8 @@ ZUI provides optional terminal enhancement that works independently from UI them
 
 ### Installation
 ```bash
-make install-terminal
+zui.sh install-terminal
 ```
-
-**What happens:**
-1. Backs up existing `.zshrc` and `.p10k.zsh` files
-2. Installs Powerlevel10k and modern CLI tools 
-3. Creates enhanced shell configuration
-4. Symlinks to `~/.zui/shell/` configs
-
-**Note**: Terminal configuration is completely optional and works independently from themes.
-
-The terminal configuration is **completely independent** from UI themes:
-- Installing/changing themes won't affect your terminal setup
-- Terminal configuration works without any theme installed
-- P10k configuration comes from terminal installation, not themes
-- You can have different users with different terminal setups
 
 ## 🔧 Configuration Management
 
@@ -206,12 +191,9 @@ ZUI respects your existing terminal setup:
 ### Switching Between Themes
 ```bash
 # Safely switch themes (preserves terminal config)
-make install-theme THEME=nord
-make install-theme THEME=galaxy
-make install-theme THEME=haxor
-
-# Update just terminal if needed
-make install-terminal
+zui.sh install-theme -t nord
+zui.sh install-theme -t galaxy
+zui.sh install-theme -t haxor
 ```
 
 ## ⌨️ Default Keybindings
@@ -266,31 +248,31 @@ monitors:
 ### Update ZUI
 ```bash
 git pull origin master
-make install  # Re-run installation
+zui.sh install  # Re-run installation
 ```
 
 ### Backup Configuration
 ```bash
-make backup
+zui.sh backup
 # or specify backup location
-make backup BACKUP_DIR=/path/to/backup
+zui.sh backup -b /path/to/backup
 ```
 
 ### Restore Configuration
 ```bash
-make restore BACKUP_DIR=/path/to/backup
+zui.sh restore -b /path/to/backup
 ```
 
 ### Clean Temporary Files
 ```bash
-make clean
+zui.sh clean
 ```
 
 ## 🗑️ Uninstallation
 
 ### UI-Focused Removal (Recommended)
 ```bash
-make uninstall
+zui.sh uninstall
 ```
 
 This will:
@@ -304,15 +286,12 @@ This will:
 If you also want to remove terminal configurations:
 ```bash
 # After running make uninstall, manually remove:
-rm ~/.zshrc ~/.p10k.zsh
+rm ~/.zshrc ~/.p10k.zshmake
 rm -rf ~/powerlevel10k/
 
 # Restore backups if they exist
 if [ -f ~/.zshrc.backup ]; then mv ~/.zshrc.backup ~/.zshrc; fi
 if [ -f ~/.p10k.zsh.backup ]; then mv ~/.p10k.zsh.backup ~/.p10k.zsh; fi
-
-# Optional: Remove installed CLI tools
-sudo apt remove lsd bat ranger neovim fzf
 ```
 
 ### Manual Package Cleanup
@@ -340,11 +319,6 @@ We welcome contributions! Here's how you can help:
 3. Test theme: `make install-theme THEME=newtheme`
 4. Submit pull request
 
-### Code Contributions
-- Follow existing code patterns and structure
-- Test your changes before submitting
-- Update documentation as needed
-
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -354,14 +328,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [baskerville](https://github.com/baskerville) - bspwm and sxhkd
 - [polybar team](https://github.com/polybar/polybar) - Polybar status bar
 - [All contributors](https://github.com/zurdi15/zui-linux/contributors) - Community improvements
-
-## 📊 Project Stats
-
-- **Languages**: Shell (95%), Python (3%), Other (2%)
-- **Lines of Code**: ~5000+
-- **Supported Themes**: 3
-- **Supported Distros**: Ubuntu/Debian family
-
----
 
 **Note**: This project is designed for X11 environments. Wayland support may be added in future versions.
