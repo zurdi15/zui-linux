@@ -6,9 +6,26 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-# Prompt
-PROMPT="%F{red}┌[%f%F{cyan}%m%f%F{red}]─[%f%F{yellow}%D{%H:%M-%d/%m}%f%F{red}]─[%f%F{magenta}%d%f%F{red}]%f"$'\n'"%F{red}└╼%f%F{green}${USER}%f%F{yellow}$%f"
-# Export PATH$
+# OMZ and theme
+export ZSH="${HOME}/.oh-my-zsh"
+ZSH_THEME="powerlevel10k/powerlevel10k"
+# Plugins
+plugins=(
+	git
+	fzf
+	# zsh-autosuggestions
+	# zsh-syntax-highlighting
+	docker
+	docker-compose
+	colored-man-pages
+)
+source /usr/share/zsh/zsh-plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source /usr/share/zsh/zsh-plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+source /usr/share/zsh/zsh-plugins/zsh-autocomplete/zsh-autocomplete.plugin.zsh
+source /usr/share/zsh/zsh-plugins/zsh-sudo/zsh-sudo.zsh
+source $ZSH/oh-my-zsh.sh
+
+# Export PATH
 export PATH=${HOME}/.local/bin:/snap/bin:/usr/sandbox/:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games:/usr/share/games:/usr/local/sbin:/usr/sbin:/sbin:${PATH}
 
 # alias
@@ -18,17 +35,11 @@ alias vdir='vdir --color=auto'
 alias grep='grep --color=auto'
 alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
-# custom alias
-alias cat='/bin/bat --paging=never'
-alias catn='/bin/cat'
-alias catnl='/bin/bat'
+alias cat='/bin/batcat --paging=never'
 alias l='lsd -lha --group-dirs=first'
 alias ll='lsd -lh --tree --group-dirs=first'
 alias lll='lsd -lha --tree --group-dirs=first'
-source /usr/share/zsh/zsh-plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-source /usr/share/zsh/zsh-plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-source /usr/share/zsh/zsh-plugins/zsh-autocomplete/zsh-autocomplete.plugin.zsh
-source /usr/share/zsh/zsh-plugins/zsh-sudo/zsh-sudo.zsh
+
 # Select all suggestion instead of top on result only
 zstyle ':autocomplete:tab:*' insert-unambiguous yes
 zstyle ':autocomplete:tab:*' widget-style menu-select
@@ -41,50 +52,12 @@ HISTFILE=${HOME}/.zsh_history
 HISTSIZE=10000
 SAVEHIST=10000
 setopt histignorealldups sharehistory
-# setopt appendhistory
-#
-#autoload -Uz compinit
-#compinit
+
+# Enable bash completions
+autoload -Uz compinit && compinit
+autoload -U +X bashcompinit && compinit
 
 # Functions
-function mkt(){
-	mkdir {nmap,content,exploits,scripts}
-}
-
-function settarget(){
-  ip_address=$1
-  machine_name=$2
-  echo "$ip_address $machine_name" > ${HOME}/.config/polybar/scripts/custom/target_ip
-}
-
-function resettarget(){
-  truncate -s 0 ${HOME}/.config/polybar/scripts/custom/target_ip
-}
-
-# Extract nmap information
-function extractPorts(){
-	ports="$(cat $1 | grep -oP '\d{1,5}/open' | awk '{print $1}' FS='/' | xargs | tr ' ' ',')"
-	ip_address="$(cat $1 | grep -oP '\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}' | sort -u | head -n 1)"
-	echo -e "\n[*] Extracting information...\n" > extractPorts.tmp
-	echo -e "\t[*] IP Address: $ip_address"  >> extractPorts.tmp
-	echo -e "\t[*] Open ports: $ports\n"  >> extractPorts.tmp
-	echo $ports | tr -d '\n' | xclip -sel clip
-	echo -e "[*] Ports copied to clipboard\n"  >> extractPorts.tmp
-	cat extractPorts.tmp; rm extractPorts.tmp
-}
-
-# Set 'man' colors
-function man() {
-    env \
-    LESS_TERMCAP_mb=$'\e[01;31m' \
-    LESS_TERMCAP_md=$'\e[01;31m' \
-    LESS_TERMCAP_me=$'\e[0m' \
-    LESS_TERMCAP_se=$'\e[0m' \
-    LESS_TERMCAP_so=$'\e[01;44;33m' \
-    LESS_TERMCAP_ue=$'\e[0m' \
-    LESS_TERMCAP_us=$'\e[01;32m' \
-    man "$@"
-}
 
 # fzf improvement
 function fzf-lovely(){
@@ -109,22 +82,20 @@ function fzf-lovely(){
 	fi
 }
 
-function rmk(){
-	scrub -p dod $1
-	shred -zun 10 -v $1
-}
+# Load dots
+[ -f ${HOME}/.bash_aliases ] && source ${HOME}/.bash_aliases
 
-
-source ${HOME}/powerlevel10k/powerlevel10k.zsh-theme
-
-# To customize prompt, run `p10k configure` or edit ${HOME}/.p10k.zsh.
-[[ ! -f ${HOME}/.p10k.zsh ]] || source ${HOME}/.p10k.zsh
+[ -f ${HOME}/.p10k.zsh ] && source ${HOME}/.p10k.zsh
 
 [ -f ${HOME}/.fzf.zsh ] && source ${HOME}/.fzf.zsh
 
-if [ -f ${HOME}/.profile ]; then
-  source ${HOME}/.profile
-fi
+[ -f ${HOME}/.profile ] && source ${HOME}/.profile
 
+
+# export NVM_DIR="$HOME/.nvm"
+# [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+# [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+# SDK Man
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 [[ -s "${HOME}/.sdkman/bin/sdkman-init.sh" ]] && source "${HOME}/.sdkman/bin/sdkman-init.sh"
