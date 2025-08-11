@@ -158,7 +158,6 @@ install_ui_only() {
 }
 
 install_deps_command() {
-    log_info "Installing dependencies..."
     run_script "install_deps.sh"
 }
 

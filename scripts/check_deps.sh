@@ -114,11 +114,9 @@ check_display() {
 
 # Generate report
 generate_report() {
-    echo ""
-    echo "=============================="
-    echo "ZUI Dependency Check Report"
-    echo "=============================="
-    echo ""
+    echo "==========================="
+    echo -e "${BLUE}ZUI Dependency Check Report${NC}"
+    echo -e "===========================\n"
     
     local total_checks=0
     local passed_checks=0

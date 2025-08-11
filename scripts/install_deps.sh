@@ -18,6 +18,9 @@ LOG_FILE="${TMP_PATH}/install_deps.log"
 # Ensure log directory exists
 mkdir -p "${TMP_PATH}"
 
+# Global tracking for installed software
+declare -a INSTALLED_SOFTWARE=()
+
 # Logging functions
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${BLUE}[INFO]${NC} $1"
@@ -35,12 +38,85 @@ log_success() {
     echo -e "${GREEN}[SUCCESS]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${GREEN}[SUCCESS]${NC} $1"
 }
 
+# Progress indicator
+show_progress() {
+    local pid=$1
+    local message="$2"
+    local spinner='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
+    local i=0
+    
+    echo -ne "${BLUE}[INFO]${NC} $message "
+    while kill -0 $pid 2>/dev/null; do
+        printf "${spinner:$i:1}"
+        sleep 0.1
+        printf "\b"
+        i=$(( (i+1) % ${#spinner} ))
+    done
+    echo -e "${GREEN}✓${NC}"
+}
+
+# Silent command execution with progress
+run_with_progress() {
+    local message="$1"
+    shift
+    
+    # For sudo commands, ensure credentials are fresh
+    if [[ "$1" == "sudo" ]]; then
+        sudo -v 2>/dev/null || true
+    fi
+    
+    # Run command in background and capture output
+    "$@" >> "${LOG_FILE}" 2>&1 &
+    local pid=$!
+    
+    show_progress $pid "$message"
+    
+    # Wait for completion and check exit code
+    wait $pid
+    return $?
+}
+
+# Run command with progress but allow interactive sudo prompts
+run_with_progress_interactive() {
+    local message="$1"
+    shift
+    
+    echo -ne "${BLUE}[INFO]${NC} $message "
+    
+    # Run command normally (allowing interactive prompts) but redirect output
+    if "$@" >> "${LOG_FILE}" 2>&1; then
+        echo -e "${GREEN}✓${NC}"
+        return 0
+    else
+        echo -e "${RED}✗${NC}"
+        return 1
+    fi
+}
+
+# Add software to tracking list
+track_software() {
+    INSTALLED_SOFTWARE+=("$1")
+}
+
 # Check if running as root
 check_not_root() {
     if [[ $EUID -eq 0 ]]; then
         log_error "This script should not be run as root"
         exit 1
     fi
+}
+
+# Ensure sudo credentials are cached
+authenticate_sudo() {
+    log_info "Authenticating sudo access..."
+    
+    # Test sudo access and cache credentials
+    if ! sudo -v; then
+        log_error "Failed to authenticate sudo access"
+        exit 1
+    fi
+    
+    log_success "Sudo authentication successful"
 }
 
 # Check distribution
@@ -62,14 +138,19 @@ check_snap() {
 
 # Install system packages
 install_system_packages() {
-    log_info "Updating package repositories..."
-    sudo apt update || { log_error "Failed to update repositories"; exit 1; }
+    log_info "Preparing system for ZUI installation..."
     
-    log_info "Upgrading system packages..."
-    sudo apt dist-upgrade -y || { log_error "Failed to upgrade system"; exit 1; }
+    if ! run_with_progress_interactive "Updating package repositories" sudo apt update; then
+        log_error "Failed to update repositories"
+        exit 1
+    fi
+    
+    if ! run_with_progress_interactive "Upgrading system packages" sudo apt dist-upgrade -y; then
+        log_error "Failed to upgrade system"
+        exit 1
+    fi
 
-    log_info "Installing core build dependencies..."
-    sudo apt install -y \
+    if ! run_with_progress_interactive "Installing build dependencies and core packages" sudo apt install -y \
         snap build-essential libxcb-ewmh-dev libxcb-icccm4-dev libxcb-keysyms1-dev \
         libxcb-xtest0-dev cmake cmake-data pkg-config python3-sphinx libcairo2-dev \
         libxcb-util0-dev libxcb-randr0-dev libxcb-composite0-dev python3-xcbgen xcb-proto \
@@ -84,31 +165,51 @@ install_system_packages() {
         libxcb-xrm-dev libxcb-shape0 libxcb-shape0-dev pavucontrol python3-pip \
         libhidapi-libusb0 libx11-dev libxinerama-dev libxss-dev libglib2.0-dev \
         libgtk-3-dev libxdg-basedir-dev libnotify-dev libnotify-bin python3-pulsectl \
-        curl git wget rsync || {
+        curl git wget rsync; then
         log_error "Failed to install system packages"
         exit 1
-    }
+    fi
     
-    log_success "System packages installed successfully"
+    track_software "System packages (build tools, development libraries)"
+    log_success "System prepared successfully"
 }
 
 # Install window manager components
 install_window_manager() {
-    log_info "Installing bspwm and sxhkd..."
+    log_info "Installing window manager components..."
     
     # Try package manager first, fallback to source
-    if ! sudo apt install -y bspwm sxhkd; then
-        log_info "Installing bspwm from source..."
-        if [[ ! -d "${TMP_PATH}/bspwm" ]]; then
-            git clone https://github.com/baskerville/bspwm.git "${TMP_PATH}/bspwm"
-        fi
-        cd "${TMP_PATH}/bspwm" && make && sudo make install
+    if run_with_progress_interactive "Installing bspwm and sxhkd from package manager" sudo apt install -y bspwm sxhkd; then
+        track_software "bspwm (Binary Space Partitioning Window Manager)"
+        track_software "sxhkd (Simple X HotKey Daemon)"
+    else
+        log_info "Package manager installation failed, building from source..."
         
-        log_info "Installing sxhkd from source..."
-        if [[ ! -d "${TMP_PATH}/sxhkd" ]]; then
-            git clone https://github.com/baskerville/sxhkd.git "${TMP_PATH}/sxhkd"
+        if [[ ! -d "${TMP_PATH}/bspwm" ]]; then
+            if ! run_with_progress "Cloning bspwm repository" git clone https://github.com/baskerville/bspwm.git "${TMP_PATH}/bspwm"; then
+                log_error "Failed to clone bspwm"
+                exit 1
+            fi
         fi
-        cd "${TMP_PATH}/sxhkd" && make && sudo make install
+        
+        if ! run_with_progress_interactive "Building and installing bspwm" bash -c "cd '${TMP_PATH}/bspwm' && make >> '${LOG_FILE}' 2>&1 && sudo make install >> '${LOG_FILE}' 2>&1"; then
+            log_error "Failed to build bspwm"
+            exit 1
+        fi
+        track_software "bspwm (Binary Space Partitioning Window Manager) [from source]"
+        
+        if [[ ! -d "${TMP_PATH}/sxhkd" ]]; then
+            if ! run_with_progress "Cloning sxhkd repository" git clone https://github.com/baskerville/sxhkd.git "${TMP_PATH}/sxhkd"; then
+                log_error "Failed to clone sxhkd"
+                exit 1
+            fi
+        fi
+        
+        if ! run_with_progress_interactive "Building and installing sxhkd" bash -c "cd '${TMP_PATH}/sxhkd' && make >> '${LOG_FILE}' 2>&1 && sudo make install >> '${LOG_FILE}' 2>&1"; then
+            log_error "Failed to build sxhkd"
+            exit 1
+        fi
+        track_software "sxhkd (Simple X HotKey Daemon) [from source]"
     fi
     
     log_success "Window manager components installed"
@@ -117,63 +218,108 @@ install_window_manager() {
 # Install compositor
 install_picom() {
     if command -v picom &> /dev/null; then
-        log_info "Picom already installed"
+        log_info "Picom already installed, skipping..."
+        track_software "picom (Compositor) [already installed]"
         return 0
     fi
 
     log_info "Installing picom compositor..."
+    
     if [[ ! -d "${TMP_PATH}/picom" ]]; then
-        git clone https://github.com/ibhagwan/picom.git "${TMP_PATH}/picom"
+        if ! run_with_progress "Cloning picom repository" git clone https://github.com/ibhagwan/picom.git "${TMP_PATH}/picom"; then
+            log_error "Failed to clone picom"
+            exit 1
+        fi
     fi
-    cd "${TMP_PATH}/picom"
-    git submodule update --init --recursive
-    meson --buildtype=release . build
-    ninja -C build
-    sudo ninja -C build install || {
+    
+    if ! run_with_progress "Initializing picom submodules" bash -c "cd '${TMP_PATH}/picom' && git submodule update --init --recursive >> '${LOG_FILE}' 2>&1"; then
+        log_error "Failed to initialize picom submodules"
+        exit 1
+    fi
+    
+    if ! run_with_progress "Building picom with meson" bash -c "cd '${TMP_PATH}/picom' && meson --buildtype=release . build >> '${LOG_FILE}' 2>&1"; then
+        log_error "Failed to configure picom build"
+        exit 1
+    fi
+    
+    if ! run_with_progress "Compiling picom" bash -c "cd '${TMP_PATH}/picom' && ninja -C build >> '${LOG_FILE}' 2>&1"; then
+        log_error "Failed to compile picom"
+        exit 1
+    fi
+    
+    if ! run_with_progress_interactive "Installing picom" bash -c "cd '${TMP_PATH}/picom' && sudo ninja -C build install >> '${LOG_FILE}' 2>&1"; then
         log_error "Failed to install picom"
         exit 1
-    }
+    fi
     
+    track_software "picom (X11 Compositor)"
     log_success "Picom installed successfully"
 }
 
 # Install polybar
 install_polybar() {
     if command -v polybar &> /dev/null; then
-        log_info "Polybar already installed"
+        log_info "Polybar already installed, skipping..."
+        track_software "polybar (Status Bar) [already installed]"
         return 0
     fi
 
     log_info "Installing polybar..."
+    
     if [[ ! -d "${TMP_PATH}/polybar" ]]; then
-        git clone --recursive https://github.com/polybar/polybar "${TMP_PATH}/polybar"
+        if ! run_with_progress "Cloning polybar repository" git clone --recursive https://github.com/polybar/polybar "${TMP_PATH}/polybar"; then
+            log_error "Failed to clone polybar"
+            exit 1
+        fi
     fi
-    cd "${TMP_PATH}/polybar"
-    mkdir -p build && cd build/
-    cmake ..
-    make -j"$(nproc)"
-    sudo make install || {
+    
+    if ! run_with_progress "Configuring polybar build" bash -c "cd '${TMP_PATH}/polybar' && mkdir -p build && cd build && cmake .. >> '${LOG_FILE}' 2>&1"; then
+        log_error "Failed to configure polybar"
+        exit 1
+    fi
+    
+    if ! run_with_progress "Compiling polybar" bash -c "cd '${TMP_PATH}/polybar/build' && make -j\$(nproc) >> '${LOG_FILE}' 2>&1"; then
+        log_error "Failed to compile polybar"
+        exit 1
+    fi
+    
+    if ! run_with_progress_interactive "Installing polybar" bash -c "cd '${TMP_PATH}/polybar/build' && sudo make install >> '${LOG_FILE}' 2>&1"; then
         log_error "Failed to install polybar"
         exit 1
-    }
+    fi
     
+    track_software "polybar (Status Bar)"
     log_success "Polybar installed successfully"
 }
 
 # Install audio components
 install_audio_tools() {
-    log_info "Installing audio tools..."
+    log_info "Installing audio and media tools..."
 
     if [[ ! -d "${TMP_PATH}/zscroll" ]]; then
-        git clone https://github.com/noctuid/zscroll "${TMP_PATH}/zscroll"
+        if run_with_progress "Cloning zscroll repository" git clone https://github.com/noctuid/zscroll "${TMP_PATH}/zscroll"; then
+            if run_with_progress_interactive "Installing zscroll" bash -c "cd '${TMP_PATH}/zscroll' && sudo python3 setup.py install >> '${LOG_FILE}' 2>&1"; then
+                track_software "zscroll (Text Scrolling Tool)"
+            else
+                log_warn "Failed to install zscroll"
+            fi
+        else
+            log_warn "Failed to clone zscroll"
+        fi
     fi
-    cd "${TMP_PATH}/zscroll"
-    sudo python3 setup.py install || log_warn "Failed to install zscroll"
     
-    sudo apt install -y playerctl || log_warn "Failed to install playerctl"
+    if run_with_progress_interactive "Installing playerctl" sudo apt install -y playerctl; then
+        track_software "playerctl (Media Player Controller)"
+    else
+        log_warn "Failed to install playerctl"
+    fi
     
     if check_snap; then
-        sudo snap install spotify || log_warn "Failed to install Spotify via snap"
+        if run_with_progress_interactive "Installing Spotify via snap" sudo snap install spotify; then
+            track_software "Spotify (Music Streaming)"
+        else
+            log_warn "Failed to install Spotify via snap"
+        fi
     fi
     
     log_success "Audio tools installation completed"
@@ -181,20 +327,36 @@ install_audio_tools() {
 
 # Install application launcher and utilities
 install_utilities() {
-    log_info "Installing utilities..."
+    log_info "Installing essential utilities..."
     
     # Rofi
-    sudo apt install -y rofi || { log_error "Failed to install rofi"; exit 1; }
+    if run_with_progress_interactive "Installing rofi (Application Launcher)" sudo apt install -y rofi; then
+        track_software "rofi (Application Launcher)"
+    else
+        log_error "Failed to install rofi"
+        exit 1
+    fi
     
     # Feh for wallpapers
-    sudo apt install -y feh || { log_error "Failed to install feh"; exit 1; }
+    if run_with_progress_interactive "Installing feh (Image Viewer/Wallpaper Manager)" sudo apt install -y feh; then
+        track_software "feh (Image Viewer & Wallpaper Manager)"
+    else
+        log_error "Failed to install feh"
+        exit 1
+    fi
     
     # Install i3lock-color
     if [[ ! -d "${TMP_PATH}/i3lock-color" ]]; then
-        git clone https://github.com/Raymo111/i3lock-color.git "${TMP_PATH}/i3lock-color"
+        if run_with_progress "Cloning i3lock-color repository" git clone https://github.com/Raymo111/i3lock-color.git "${TMP_PATH}/i3lock-color"; then
+            if run_with_progress_interactive "Installing i3lock-color (Enhanced Screen Locker)" bash -c "cd '${TMP_PATH}/i3lock-color' && ./install-i3lock-color.sh >> '${LOG_FILE}' 2>&1"; then
+                track_software "i3lock-color (Enhanced Screen Locker)"
+            else
+                log_warn "Failed to install i3lock-color"
+            fi
+        else
+            log_warn "Failed to clone i3lock-color"
+        fi
     fi
-    cd "${TMP_PATH}/i3lock-color"
-    ./install-i3lock-color.sh || log_warn "Failed to install i3lock-color"
     
     log_success "Utilities installed successfully"
 }
@@ -202,20 +364,26 @@ install_utilities() {
 # Install notification daemon
 install_dunst() {
     if command -v dunst &> /dev/null; then
-        log_info "Dunst already installed"
+        log_info "Dunst already installed, skipping..."
+        track_software "dunst (Notification Daemon) [already installed]"
         return 0
     fi
 
     log_info "Installing dunst notification daemon..."
+    
     if [[ ! -d "${TMP_PATH}/dunst" ]]; then
-        git clone https://github.com/dunst-project/dunst.git "${TMP_PATH}/dunst"
+        if ! run_with_progress "Cloning dunst repository" git clone https://github.com/dunst-project/dunst.git "${TMP_PATH}/dunst"; then
+            log_error "Failed to clone dunst"
+            exit 1
+        fi
     fi
-    cd "${TMP_PATH}/dunst"
-    make && sudo make install || {
+    
+    if ! run_with_progress_interactive "Building and installing dunst" bash -c "cd '${TMP_PATH}/dunst' && make >> '${LOG_FILE}' 2>&1 && sudo make install >> '${LOG_FILE}' 2>&1"; then
         log_error "Failed to install dunst"
         exit 1
-    }
+    fi
     
+    track_software "dunst (Notification Daemon)"
     log_success "Dunst installed successfully"
 }
 
@@ -224,12 +392,30 @@ install_applications() {
     log_info "Installing applications..."
     
     # Remove default Firefox if present
-    sudo apt remove -y firefox || log_info "Firefox not installed via apt"
+    if run_with_progress_interactive "Removing default Firefox (if present)" sudo apt remove -y firefox; then
+        log_info "Default Firefox removed"
+    else
+        log_info "Default Firefox not installed via apt"
+    fi
     
     if check_snap; then
-        sudo snap install firefox || log_warn "Failed to install Firefox via snap"
-        sudo snap install code --classic || log_warn "Failed to install VS Code via snap"
-        sudo snap install sublime-text --classic || log_warn "Failed to install Sublime Text via snap"
+        if run_with_progress_interactive "Installing Firefox via snap" sudo snap install firefox; then
+            track_software "Firefox (Web Browser)"
+        else
+            log_warn "Failed to install Firefox via snap"
+        fi
+        
+        if run_with_progress_interactive "Installing VS Code via snap" sudo snap install code --classic; then
+            track_software "Visual Studio Code (Code Editor)"
+        else
+            log_warn "Failed to install VS Code via snap"
+        fi
+        
+        if run_with_progress_interactive "Installing Sublime Text via snap" sudo snap install sublime-text --classic; then
+            track_software "Sublime Text (Text Editor)"
+        else
+            log_warn "Failed to install Sublime Text via snap"
+        fi
     fi
     
     log_success "Applications installation completed"
@@ -239,16 +425,37 @@ install_applications() {
 install_streamdeck() {
     log_info "Installing StreamDeck support..."
     
-    pip3 install streamdeck_ui || log_warn "Failed to install StreamDeck UI"
+    if run_with_progress "Installing StreamDeck UI" pip3 install streamdeck_ui; then
+        track_software "StreamDeck UI (Hardware Controller)"
+    else
+        log_warn "Failed to install StreamDeck UI"
+    fi
     
     log_success "StreamDeck support installed"
 }
 
 # Cleanup
 cleanup() {
-    log_info "Cleaning up..."
-    sudo apt autoremove -y || log_warn "Failed to autoremove packages"
-    log_success "Cleanup completed"
+    if run_with_progress_interactive "Cleaning up package cache" sudo apt autoremove -y; then
+        log_success "Cleanup completed"
+    else
+        log_warn "Failed to autoremove packages"
+    fi
+}
+
+# Generate installation summary
+generate_summary() {
+    if [[ ${#INSTALLED_SOFTWARE[@]} -eq 0 ]]; then
+        echo "No new software was installed (all components were already present)"
+    else
+        echo -e "${BLUE}\nNewly Installed Software:${NC}"
+        for software in "${INSTALLED_SOFTWARE[@]}"; do
+            echo -e "  ${GREEN}✓${NC} $software"
+        done
+    fi
+    
+    echo ""
+    echo -e "${BLUE}Installation Log:${NC} ${LOG_FILE}"
 }
 
 # Main installation function
@@ -257,9 +464,17 @@ main() {
     mkdir -p "${TMP_PATH}"
     touch "${LOG_FILE}"
     
+    echo "=============================="
+    echo -e "${BLUE}ZUI Dependencies Installation${NC}"
+    echo "=============================="
+    echo ""
+    
     # Pre-flight checks
     check_not_root
     check_distro
+    authenticate_sudo
+    
+    echo ""
     
     # Install components
     install_system_packages
@@ -273,8 +488,8 @@ main() {
     # install_streamdeck
     cleanup
     
-    log_success "All dependencies installed successfully!"
-    log_info "Installation log saved to: ${LOG_FILE}"
+    # Show summary
+    generate_summary
 }
 
 # Run main function
