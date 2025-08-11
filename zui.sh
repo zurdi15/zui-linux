@@ -8,10 +8,10 @@ set -euo pipefail
 # Script configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 THEME="${THEME:-galaxy}"
-BACKUP_DIR="${BACKUP_DIR:-$HOME/.zui-backup}"
-INSTALL_DIR="${INSTALL_DIR:-$HOME/.zui}"
-SCRIPTS_DIR="$SCRIPT_DIR/scripts"
-THEMES_DIR="$SCRIPT_DIR/themes"
+BACKUP_DIR="${BACKUP_DIR:-${HOME}/.zui-backup}"
+INSTALL_DIR="${INSTALL_DIR:-${HOME}/.zui}"
+SCRIPTS_DIR="${SCRIPT_DIR}/scripts"
+THEMES_DIR="${SCRIPT_DIR}/themes"
 
 # Colors for output
 RED='\033[0;31m'
@@ -115,19 +115,19 @@ parse_args() {
 # Check if script exists and run it
 run_script() {
     local script_name="$1"
-    local script_path="$SCRIPTS_DIR/$script_name"
-    
-    if [[ ! -f "$script_path" ]]; then
-        log_error "Script not found: $script_path"
+    local script_path="${SCRIPTS_DIR}/${script_name}"
+
+    if [[ ! -f "${script_path}" ]]; then
+        log_error "Script not found: ${script_path}"
         exit 1
     fi
     
-    if [[ ! -x "$script_path" ]]; then
-        log_warning "Making script executable: $script_path"
-        chmod +x "$script_path"
+    if [[ ! -x "${script_path}" ]]; then
+        log_warning "Making script executable: ${script_path}"
+        chmod +x "${script_path}"
     fi
-    
-    bash "$script_path" "${@:2}"
+
+    bash "${script_path}" "${@:2}"
 }
 
 # Installation functions
@@ -168,7 +168,7 @@ install_terminal_command() {
 }
 
 install_theme_command() {
-    run_script "install_theme.sh" "$THEME"
+    run_script "install_theme.sh" "${THEME}"
 }
 
 post_install_command() {
@@ -183,13 +183,13 @@ uninstall_command() {
 # Maintenance commands
 clean_command() {
     rm -rf /tmp/zui
-    find . -name "*.log" -delete 2>/dev/null || true
-    find . -name "*.tmp" -delete 2>/dev/null || true
+    find . -name "*.log" -delete 2>/dev/null
+    find . -name "*.tmp" -delete 2>/dev/null
     log_success "Cleanup completed!"
 }
 
 test_command() {
-    run_script "test/run_tests.sh" || true
+    run_script "test/run_tests.sh"
 }
 
 lint_command() {
@@ -203,34 +203,36 @@ lint_command() {
 }
 
 check_deps_command() {
-    run_script "check_deps.sh" || true
+    run_script "check_deps.sh"
 }
 
 # Backup and restore
 backup_command() {
-    run_script "backup.sh" "$BACKUP_DIR" || true
+    run_script "backup.sh" "${BACKUP_DIR}"
 }
 
 restore_command() {
-    run_script "restore.sh" "$BACKUP_DIR"
+    run_script "restore.sh" "${BACKUP_DIR}"
 }
 
 # Theme management
 list_themes_command() {
     log_info "Available themes:"
-    if [[ -d "$THEMES_DIR" ]]; then
-        ls -1 "$THEMES_DIR" | grep -v "^\\." | while read -r theme; do
-            echo "  - $theme"
+    if [[ -d "${THEMES_DIR}" ]]; then
+        for theme in "${THEMES_DIR}"/*; do
+            theme_name="$(basename "${theme}")"
+            [[ "${theme_name}" == .* ]] && continue
+            echo "  - ${theme_name}"
         done
     else
-        log_error "Themes directory not found: $THEMES_DIR"
+        log_error "Themes directory not found: ${THEMES_DIR}"
         exit 1
     fi
 }
 
 apply_theme_command() {
-    log_info "Applying theme: $THEME"
-    run_script "apply_theme.sh" "$THEME"
+    log_info "Applying theme: ${THEME}"
+    run_script "apply_theme.sh" "${THEME}"
 }
 
 # Development commands
@@ -259,7 +261,7 @@ main() {
     fi
     
     # Execute command
-    case "$COMMAND" in
+    case "${COMMAND}" in
         install)
             install_full
             ;;
@@ -315,7 +317,7 @@ main() {
             show_help
             ;;
         *)
-            log_error "Unknown command: $COMMAND"
+            log_error "Unknown command: ${COMMAND}"
             show_help
             exit 1
             ;;
