@@ -38,7 +38,7 @@ log_success() {
 validate_theme() {
     local theme="$1"
     
-    if [[ -z "$theme" ]]; then
+    if [[ -z "${theme}" ]]; then
         log_error "No theme specified"
         return 1
     fi
@@ -46,7 +46,9 @@ validate_theme() {
     if [[ ! -d "${BASE_PATH}/themes/${theme}" ]]; then
         log_error "Theme '${theme}' not found in ${BASE_PATH}/themes/"
         log_info "Available themes:"
-        ls -1 "${BASE_PATH}/themes" | grep -v "^\\." | sed 's/^/  - /'
+        for entry in "${BASE_PATH}/themes"/*; do
+            [[ -d "${entry}" || -f "${entry}" ]] && [[ "$(basename "${entry}")" != .* ]] && echo "  - $(basename "${entry}")"
+        done
         return 1
     fi
     
@@ -89,8 +91,8 @@ create_theme_symlinks() {
         # Find first wallpaper file if default doesn't exist
         local wallpaper
         wallpaper=$(find "${ZUI_PATH}/current_theme/wallpapers" -type f \( -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" \) | head -n1)
-        if [[ -n "$wallpaper" ]]; then
-            ln -sfn "$wallpaper" "${ZUI_PATH}/current_theme/wallpapers/current_wallpaper"
+        if [[ -n "${wallpaper}" ]]; then
+            ln -sfn "${wallpaper}" "${ZUI_PATH}/current_theme/wallpapers/current_wallpaper"
         fi
     fi
     
@@ -111,7 +113,7 @@ configure_app_symlinks() {
     
     for config in "${configs[@]}"; do
         if [[ -L "${CONFIG_PATH}/${config}" ]] || [[ -d "${CONFIG_PATH}/${config}" ]]; then
-            rm -rf "${CONFIG_PATH}/${config}"
+            rm -rf "${CONFIG_PATH:?}/${config}"
         fi
     done
     
@@ -282,16 +284,16 @@ main() {
     echo ""
 
     # Validate theme
-    validate_theme "$theme" || exit 1
+    validate_theme "${theme}"
     
     # Install theme
-    copy_theme_files "$theme"
-    create_theme_symlinks "$theme"
-    configure_app_symlinks "$theme"
-    configure_home_files "$theme"
-    install_theme_resources "$theme"
-    configure_hardware_specific "$theme"
-    run_theme_install "$theme"
+    copy_theme_files "${theme}"
+    create_theme_symlinks "${theme}"
+    configure_app_symlinks "${theme}"
+    configure_home_files "${theme}"
+    install_theme_resources "${theme}"
+    configure_hardware_specific "${theme}"
+    run_theme_install "${theme}"
     install_neovim_plugins
     
     log_success "Theme '${theme}' installed successfully!"
@@ -308,7 +310,9 @@ if [[ $# -eq 0 ]]; then
     echo ""
     echo "Available themes:"
     if [[ -d "${BASE_PATH}/themes" ]]; then
-        ls -1 "${BASE_PATH}/themes" | grep -v "^\\." | sed 's/^/  - /'
+        for entry in "${BASE_PATH}/themes"/*; do
+            [[ -d "${entry}" || -f "${entry}" ]] && [[ "$(basename "${entry}")" != .* ]] && echo "  - $(basename "${entry}")"
+        done
     else
         echo "  No themes found"
     fi

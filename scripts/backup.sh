@@ -32,8 +32,8 @@ log_success() {
 create_backup() {
     local backup_dir="${1:-${HOME}/.zui-backup-$(date +%Y%m%d_%H%M%S)}"
     
-    log_info "Creating backup in: $backup_dir"
-    mkdir -p "$backup_dir"
+    log_info "Creating backup in: ${backup_dir}"
+    mkdir -p "${backup_dir}"
     
     # List of files and directories to backup
     local items_to_backup=(
@@ -60,20 +60,20 @@ create_backup() {
     local skipped=0
     
     for item in "${items_to_backup[@]}"; do
-        local item_path="$HOME/$item"
+        local item_path="${HOME}/${item}"
         
-        if [[ -e "$item_path" ]] && [[ ! -L "$item_path" ]]; then
+        if [[ -e "${item_path}" ]] && [[ ! -L "${item_path}" ]]; then
             # Create parent directory structure
             local parent_dir
-            parent_dir=$(dirname "$backup_dir/$item")
-            mkdir -p "$parent_dir"
+            parent_dir=$(dirname "${backup_dir}/${item}")
+            mkdir -p "${parent_dir}"
             
             # Copy item
-            if cp -r "$item_path" "$backup_dir/$item" 2>/dev/null; then
-                log_info "Backed up: $item"
+            if cp -r "${item_path}" "${backup_dir}/${item}" 2>/dev/null; then
+                log_info "Backed up: ${item}"
                 ((backed_up++))
             else
-                log_warn "Failed to backup: $item"
+                log_warn "Failed to backup: ${item}"
             fi
         else
             ((skipped++))
@@ -81,27 +81,27 @@ create_backup() {
     done
     
     # Create backup manifest
-    cat > "$backup_dir/backup_manifest.txt" <<EOF
+    cat > "${backup_dir}/backup_manifest.txt" <<EOF
 ZUI Configuration Backup
 ========================
 Date: $(date)
-User: $USER
-Host: $HOSTNAME
-Backed up items: $backed_up
-Skipped items: $skipped
+User: ${USER}
+Host: ${HOSTNAME}
+Backed up items: ${backed_up}
+Skipped items: ${skipped}
 
 Items backed up:
-$(find "$backup_dir" -type f -o -type d | grep -v backup_manifest.txt | sort)
+$(find "${backup_dir}" -type f -o -type d | grep -v backup_manifest.txt | sort)
 EOF
     
-    if [[ $backed_up -gt 0 ]]; then
-        log_success "Backup completed: $backup_dir"
-        log_info "Backed up $backed_up items, skipped $skipped items"
-        echo "$backup_dir"
+    if [[ ${backed_up} -gt 0 ]]; then
+        log_success "Backup completed: ${backup_dir}"
+        log_info "Backed up ${backed_up} items, skipped ${skipped} items"
+        echo "${backup_dir}"
         return 0
     else
         log_warn "No items were backed up"
-        rmdir "$backup_dir" 2>/dev/null || true
+        rmdir "${backup_dir}" 2>/dev/null || true
         return 1
     fi
 }
@@ -115,8 +115,8 @@ main() {
     echo ""
 
     local backup_dir="${1:-}"
-    
-    create_backup "$backup_dir"
+
+    create_backup "${backup_dir}"
 }
 
 # Run main function

@@ -54,7 +54,7 @@ confirm_terminal_installation() {
     echo ""
     echo ""
     
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    if [[ ! ${REPLY} =~ ^[Yy]$ ]]; then
         log_info "Terminal installation skipped by user choice."
         exit 0
     fi
@@ -205,9 +205,9 @@ set_default_shell() {
     fi
     
     # Change default shell for user
-    if [[ "$SHELL" != *"zsh"* ]]; then
+    if [[ "${SHELL}" != *"zsh"* ]]; then
         log_info "Changing default shell to zsh for user"
-        sudo usermod --shell /usr/bin/zsh "$USER" || \
+        sudo usermod --shell /usr/bin/zsh "${USER}" || \
             log_warn "Failed to change user shell to zsh"
     else
         log_info "User shell is already zsh"
@@ -216,7 +216,7 @@ set_default_shell() {
     # Change default shell for root
     local root_shell
     root_shell=$(sudo grep "^root:" /etc/passwd | cut -d: -f7)
-    if [[ "$root_shell" != *"zsh"* ]]; then
+    if [[ "${root_shell}" != *"zsh"* ]]; then
         log_info "Changing default shell to zsh for root"
         sudo usermod --shell /usr/bin/zsh root || \
             log_warn "Failed to change root shell to zsh"
@@ -260,8 +260,8 @@ main() {
     echo ""
     
     # Check if ZUI is installed
-    if [[ ! -d "$ZUI_PATH" ]]; then
-        log_error "ZUI core installation not found at: $ZUI_PATH"
+    if [[ ! -d "${ZUI_PATH}" ]]; then
+        log_error "ZUI core installation not found at: ${ZUI_PATH}"
         log_error "Please install ZUI core first with: zui.sh install-core"
         exit 1
     fi

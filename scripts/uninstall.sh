@@ -99,31 +99,6 @@ readonly ZUI_CORE_UI_PACKAGES=(
     "pavucontrol"
 )
 
-# Terminal-related packages (PRESERVED - not removed by uninstall)
-readonly ZUI_TERMINAL_PACKAGES=(
-    "zsh"
-    "lsd"
-    "bat"
-    "ranger"
-    "neovim"
-)
-
-# Build tools and general development libraries (preserved as they might be used by other projects)
-readonly ZUI_BUILD_PACKAGES=(
-    "build-essential"
-    "cmake"
-    "cmake-data"
-    "pkg-config"
-    "python3-sphinx"
-    "meson"
-    "dh-autoreconf"
-    "git"
-    "wget"
-    "curl"
-    "rsync"
-    "python3-pip"
-)
-
 # Logging functions
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
@@ -145,9 +120,9 @@ log_success() {
 confirm_uninstall() {
     echo -e "${YELLOW}WARNING: This will remove ZUI and its UI configurations.${NC}"
     echo "The following will be removed:"
-    echo "  - ZUI directory: $ZUI_PATH"
-    echo "  - UI configuration symlinks in: $CONFIG_PATH (bspwm, polybar, etc.)"
-    echo "  - ZUI utilities in: $HOME/.local/bin"
+    echo "  - ZUI directory: ${ZUI_PATH}"
+    echo "  - UI configuration symlinks in: ${CONFIG_PATH} (bspwm, polybar, etc.)"
+    echo "  - ZUI utilities in: ${HOME}/.local/bin"
     echo ""
     echo "The following will be preserved:"
     echo "  - Terminal configurations (.zshrc, .p10k.zsh)"
@@ -159,8 +134,8 @@ confirm_uninstall() {
     
     read -p "Are you sure you want to proceed? [y/N]: " -n 1 -r
     echo
-    
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+
+    if [[ ! ${REPLY} =~ ^[Yy]$ ]]; then
         log_info "Uninstallation cancelled."
         exit 0
     fi
@@ -169,22 +144,22 @@ confirm_uninstall() {
 # Check for backups
 check_backups() {
     log_info "Checking for available backups..."
-    
-    if [[ -f "$ZUI_PATH/.last_backup" ]]; then
+
+    if [[ -f "${ZUI_PATH}/.last_backup" ]]; then
         local backup_dir
-        backup_dir=$(grep 'BACKUP_DIR=' "$ZUI_PATH/.last_backup" | cut -d'=' -f2 | tr -d "'\"")
-        
-        if [[ -d "$backup_dir" ]]; then
-            log_info "Found backup: $backup_dir"
+        backup_dir=$(grep 'BACKUP_DIR=' "${ZUI_PATH}/.last_backup" | cut -d'=' -f2 | tr -d "'\"")
+
+        if [[ -d "${backup_dir}" ]]; then
+            log_info "Found backup: ${backup_dir}"
             echo ""
             read -p "Do you want to restore configurations from backup? [y/N]: " -n 1 -r
             echo
-            
-            if [[ $REPLY =~ ^[Yy]$ ]]; then
-                restore_backup "$backup_dir"
+
+            if [[ ${REPLY} =~ ^[Yy]$ ]]; then
+                restore_backup "${backup_dir}"
             fi
         else
-            log_warn "Backup directory not found: $backup_dir"
+            log_warn "Backup directory not found: ${backup_dir}"
         fi
     else
         log_info "No backup information found"
@@ -194,17 +169,17 @@ check_backups() {
 # Restore backup
 restore_backup() {
     local backup_dir="$1"
-    
-    log_info "Restoring backup from: $backup_dir"
-    
+
+    log_info "Restoring backup from: ${backup_dir}"
+
     # Restore files from backup
-    if [[ -d "$backup_dir" ]]; then
-        cp -r "$backup_dir"/* "$HOME"/ 2>/dev/null || {
+    if [[ -d "${backup_dir}" ]]; then
+        cp -r "${backup_dir}"/* "$HOME"/ 2>/dev/null || {
             log_warn "Some files could not be restored from backup"
         }
         log_success "Backup restored"
     else
-        log_error "Backup directory not found: $backup_dir"
+        log_error "Backup directory not found: ${backup_dir}"
         return 1
     fi
 }
@@ -219,12 +194,12 @@ remove_config_symlinks() {
     )
     
     for config in "${configs[@]}"; do
-        local config_path="$CONFIG_PATH/$config"
-        if [[ -L "$config_path" ]]; then
-            rm "$config_path" && log_info "Removed: $config_path" || \
-                log_warn "Failed to remove: $config_path"
-        elif [[ -d "$config_path" ]] && [[ ! -L "$config_path" ]]; then
-            log_warn "Directory exists but is not a symlink: $config_path (skipping)"
+        local config_path="${CONFIG_PATH}/${config}"
+        if [[ -L "${config_path}" ]]; then
+            rm "${config_path}" && log_info "Removed: ${config_path}" || \
+                log_warn "Failed to remove: ${config_path}"
+        elif [[ -d "${config_path}" ]] && [[ ! -L "${config_path}" ]]; then
+            log_warn "Directory exists but is not a symlink: ${config_path} (skipping)"
         fi
     done
     
@@ -237,34 +212,34 @@ remove_home_symlinks() {
     
     # We now preserve terminal configurations (.zshrc, .p10k.zsh)
     # Only remove if they point specifically to ZUI locations
-    
-    local zshrc_path="$HOME/.zshrc"
-    local p10k_path="$HOME/.p10k.zsh"
-    
+
+    local zshrc_path="${HOME}/.zshrc"
+    local p10k_path="${HOME}/.p10k.zsh"
+
     # Check if .zshrc points to ZUI - if so, we can remove it
     # but only if it's a ZUI-created symlink, not user's original config
-    if [[ -L "$zshrc_path" ]]; then
+    if [[ -L "${zshrc_path}" ]]; then
         local target
-        target=$(readlink "$zshrc_path")
+        target=$(readlink "${zshrc_path}")
         if [[ "$target" == *"/.zui/"* ]]; then
-            log_info "Removing ZUI .zshrc symlink (points to ZUI): $zshrc_path"
-            rm "$zshrc_path" || log_warn "Failed to remove: $zshrc_path"
+            log_info "Removing ZUI .zshrc symlink (points to ZUI): ${zshrc_path}"
+            rm "${zshrc_path}" || log_warn "Failed to remove: ${zshrc_path}"
         else
-            log_info "Preserving .zshrc (not a ZUI symlink): $zshrc_path"
+            log_info "Preserving .zshrc (not a ZUI symlink): ${zshrc_path}"
         fi
     else
         log_info "No .zshrc symlink found (preserved)"
     fi
     
     # Check if .p10k.zsh points to ZUI
-    if [[ -L "$p10k_path" ]]; then
+    if [[ -L "${p10k_path}" ]]; then
         local target
-        target=$(readlink "$p10k_path")
+        target=$(readlink "${p10k_path}")
         if [[ "$target" == *"/.zui/"* ]]; then
-            log_info "Removing ZUI .p10k.zsh symlink (points to ZUI): $p10k_path"
-            rm "$p10k_path" || log_warn "Failed to remove: $p10k_path"
+            log_info "Removing ZUI .p10k.zsh symlink (points to ZUI): ${p10k_path}"
+            rm "${p10k_path}" || log_warn "Failed to remove: ${p10k_path}"
         else
-            log_info "Preserving .p10k.zsh (not a ZUI symlink): $p10k_path"
+            log_info "Preserving .p10k.zsh (not a ZUI symlink): ${p10k_path}"
         fi
     else
         log_info "No .p10k.zsh symlink found (preserved)"
@@ -272,14 +247,14 @@ remove_home_symlinks() {
     
     # Also check root symlinks, but same logic
     for file in ".zshrc" ".p10k.zsh"; do
-        if [[ -L "/root/$file" ]]; then
+        if [[ -L "/root/${file}" ]]; then
             local target
-            target=$(readlink "/root/$file")
+            target=$(readlink "/root/${file}")
             if [[ "$target" == *"/.zui/"* ]]; then
-                log_info "Removing ZUI root symlink: /root/$file"
-                sudo rm "/root/$file" || log_warn "Failed to remove: /root/$file"
+                log_info "Removing ZUI root symlink: /root/${file}"
+                sudo rm "/root/${file}" || log_warn "Failed to remove: /root/${file}"
             else
-                log_info "Preserving root $file (not a ZUI symlink)"
+                log_info "Preserving root ${file} (not a ZUI symlink)"
             fi
         fi
     done
@@ -290,9 +265,9 @@ remove_home_symlinks() {
 # Remove ZUI utilities
 remove_zui_utilities() {
     log_info "Removing ZUI utilities..."
-    
-    if [[ -d "$HOME/.local/bin" ]]; then
-        find "$HOME/.local/bin" -name "zui-*" -delete 2>/dev/null || \
+
+    if [[ -d "${HOME}/.local/bin" ]]; then
+        find "${HOME}/.local/bin" -name "zui-*" -delete 2>/dev/null || \
             log_warn "Some ZUI utilities could not be removed"
         log_success "ZUI utilities removed"
     else
@@ -311,9 +286,9 @@ remove_system_rules() {
     )
     
     for rule in "${rules[@]}"; do
-        if [[ -f "$rule" ]]; then
-            sudo rm "$rule" && log_info "Removed: $rule" || \
-                log_warn "Failed to remove: $rule"
+        if [[ -f "${rule}" ]]; then
+            sudo rm "${rule}" && log_info "Removed: ${rule}" || \
+                log_warn "Failed to remove: ${rule}"
         fi
     done
     
@@ -330,9 +305,9 @@ remove_system_rules() {
     )
     
     for trigger in "${triggers[@]}"; do
-        if [[ -f "$trigger" ]]; then
-            sudo rm "$trigger" && log_info "Removed: $trigger" || \
-                log_warn "Failed to remove: $trigger"
+        if [[ -f "${trigger}" ]]; then
+            sudo rm "${trigger}" && log_info "Removed: ${trigger}" || \
+                log_warn "Failed to remove: ${trigger}"
         fi
     done
     
@@ -360,7 +335,7 @@ remove_zsh_plugins() {
     done
     
     # Only remove parent directory if it's empty and we're sure we created it
-    if [[ -d "/usr/share/zsh/zsh-plugins" ]] && [[ "$removed_any" == "true" ]]; then
+    if [[ -d "/usr/share/zsh/zsh-plugins" ]] && [[ "${removed_any}" == "true" ]]; then
         if [[ -z "$(ls -A /usr/share/zsh/zsh-plugins 2>/dev/null)" ]]; then
             log_info "  Removing empty ZSH plugins directory"
             sudo rmdir "/usr/share/zsh/zsh-plugins" 2>/dev/null || log_warn "Could not remove ZSH plugins directory"
@@ -369,7 +344,7 @@ remove_zsh_plugins() {
         fi
     fi
     
-    if [[ "$removed_any" == "true" ]]; then
+    if [[ "${removed_any}" == "true" ]]; then
         log_success "ZUI ZSH plugins removed"
     else
         log_info "No ZUI-specific ZSH plugins found to remove"
@@ -387,8 +362,8 @@ remove_packages() {
     
     read -p "Choose option [1-3]: " -n 1 -r
     echo
-    
-    case $REPLY in
+
+    case ${REPLY} in
         1)
             remove_ui_core_packages
             ;;
@@ -414,8 +389,8 @@ remove_ui_core_packages() {
     # Check which packages are actually installed
     for package in "${ZUI_CORE_UI_PACKAGES[@]}"; do
         if dpkg -l | grep -q "^ii.*${package}"; then
-            packages_to_remove+=("$package")
-            packages_found+=("$package")
+            packages_to_remove+=("${package}")
+            packages_found+=("${package}")
         fi
     done
     
@@ -433,7 +408,7 @@ remove_ui_core_packages() {
     read -p "Proceed with UI package removal? [y/N]: " -n 1 -r
     echo
     
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
+    if [[ ${REPLY} =~ ^[Yy]$ ]]; then
         log_info "Removing UI packages..."
         sudo apt remove --purge -y "${packages_to_remove[@]}" || \
             log_warn "Some packages could not be removed"
@@ -457,8 +432,8 @@ remove_all_ui_packages() {
     # Check which packages are actually installed
     for package in "${ZUI_UI_PACKAGES[@]}"; do
         if dpkg -l | grep -q "^ii.*${package}"; then
-            packages_to_remove+=("$package")
-            packages_found+=("$package")
+            packages_to_remove+=("${package}")
+            packages_found+=("${package}")
         fi
     done
     
@@ -475,8 +450,8 @@ remove_all_ui_packages() {
     log_warn "WARNING: This will remove UI development libraries that may be used by other applications!"
     read -p "Are you sure you want to proceed? [y/N]: " -n 1 -r
     echo
-    
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
+
+    if [[ ${REPLY} =~ ^[Yy]$ ]]; then
         log_info "Removing UI packages..."
         sudo apt remove --purge -y "${packages_to_remove[@]}" || \
             log_warn "Some packages could not be removed"
@@ -513,9 +488,9 @@ remove_desktop_entry() {
     log_info "Removing desktop entry..."
     
     local desktop_entry="/usr/share/xsessions/bspwm.desktop"
-    
-    if [[ -f "$desktop_entry" ]]; then
-        sudo rm "$desktop_entry" && log_success "Desktop entry removed" || \
+
+    if [[ -f "${desktop_entry}" ]]; then
+        sudo rm "${desktop_entry}" && log_success "Desktop entry removed" || \
             log_warn "Failed to remove desktop entry"
     else
         log_info "Desktop entry not found"
@@ -525,23 +500,24 @@ remove_desktop_entry() {
 # Remove ZUI directory
 remove_zui_directory() {
     log_info "Removing ZUI directory..."
-    
-    if [[ -d "$ZUI_PATH" ]]; then
+
+    if [[ -d "${ZUI_PATH}" ]]; then
         # Ask user if they want to keep backups
-        if [[ -d "$ZUI_PATH/backups" ]] && [[ -n "$(ls -A "$ZUI_PATH/backups" 2>/dev/null)" ]]; then
+        if [[ -d "${ZUI_PATH}/backups" ]] && [[ -n "$(ls -A "${ZUI_PATH}/backups" 2>/dev/null)" ]]; then
             echo ""
             read -p "Do you want to keep backup directory? [Y/n]: " -n 1 -r
             echo
-            
-            if [[ ! $REPLY =~ ^[Nn]$ ]]; then
-                local backup_preserve="$HOME/.zui-backups-$(date +%Y%m%d_%H%M%S)"
-                mv "$ZUI_PATH/backups" "$backup_preserve" && \
-                    log_info "Backups preserved in: $backup_preserve" || \
+
+            if [[ ! ${REPLY} =~ ^[Nn]$ ]]; then
+                local backup_preserve
+                backup_preserve="${HOME}/.zui-backups-$(date +%Y%m%d_%H%M%S)"
+                mv "${ZUI_PATH}/backups" "${backup_preserve}" && \
+                    log_info "Backups preserved in: ${backup_preserve}" || \
                     log_warn "Failed to preserve backups"
             fi
         fi
-        
-        rm -rf "$ZUI_PATH" && log_success "ZUI directory removed" || \
+
+        rm -rf "${ZUI_PATH}" && log_success "ZUI directory removed" || \
             log_error "Failed to remove ZUI directory"
     else
         log_info "ZUI directory not found"
@@ -558,7 +534,7 @@ generate_summary() {
     echo "=============================="
     echo ""
     echo "Removed:"
-    echo "  ✓ ZUI directory: $ZUI_PATH"
+    echo "  ✓ ZUI directory: ${ZUI_PATH}"
     echo "  ✓ Configuration symlinks"
     echo "  ✓ ZUI utilities"
     echo "  ✓ System rules and triggers"
@@ -586,12 +562,12 @@ main() {
     log_info "Starting ZUI uninstallation..."
     
     # Check if ZUI is installed
-    if [[ ! -d "$ZUI_PATH" ]]; then
-        log_warn "ZUI does not appear to be installed at: $ZUI_PATH"
+    if [[ ! -d "${ZUI_PATH}" ]]; then
+        log_warn "ZUI does not appear to be installed at: ${ZUI_PATH}"
         read -p "Continue with cleanup anyway? [y/N]: " -n 1 -r
         echo
-        
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+
+        if [[ ! ${REPLY} =~ ^[Yy]$ ]]; then
             log_info "Uninstallation cancelled."
             exit 0
         fi

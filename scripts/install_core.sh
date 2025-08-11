@@ -147,13 +147,11 @@ main() {
     echo "====================="
     echo ""
 
-    # Create temp directory if needed
     mkdir -p "${TMP_PATH}"
-    
-    # Install UI core components only
+
     create_zui_structure
     install_common_configs
-    install_zui_utilities
+    # install_zui_utilities
     configure_permissions
     configure_network_triggers
     

@@ -12,7 +12,6 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-BASE_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ZUI_PATH=${ZUI_PATH:-${HOME}/.zui}
 CONFIG_PATH=${CONFIG_PATH:-${HOME}/.config}
 
@@ -40,36 +39,36 @@ validate_installation() {
     local errors=0
     
     # Check ZUI directory structure
-    if [[ ! -d "$ZUI_PATH" ]]; then
-        log_error "ZUI directory not found: $ZUI_PATH"
+    if [[ ! -d "${ZUI_PATH}" ]]; then
+        log_error "ZUI directory not found: ${ZUI_PATH}"
         ((errors++))
     fi
     
     # Check current theme link
-    if [[ ! -L "$ZUI_PATH/current_theme" ]]; then
-        log_error "Current theme link not found: $ZUI_PATH/current_theme"
+    if [[ ! -L "${ZUI_PATH}/current_theme" ]]; then
+        log_error "Current theme link not found: ${ZUI_PATH}/current_theme"
         ((errors++))
     fi
     
     # Check essential configs
     local essential_configs=("bspwm" "sxhkd")
     for config in "${essential_configs[@]}"; do
-        if [[ ! -L "$CONFIG_PATH/$config" ]]; then
-            log_error "Essential config link missing: $CONFIG_PATH/$config"
+        if [[ ! -L "${CONFIG_PATH}/${config}" ]]; then
+            log_error "Essential config link missing: ${CONFIG_PATH}/${config}"
             ((errors++))
         fi
     done
     
     # Check utilities
-    if [[ ! -x "$HOME/.local/bin/zui-theme" ]]; then
+    if [[ ! -x "${HOME}/.local/bin/zui-theme" ]]; then
         log_warn "ZUI theme utility not found or not executable"
     fi
-    
-    if [[ $errors -eq 0 ]]; then
+
+    if [[ ${errors} -eq 0 ]]; then
         log_success "Installation validation passed"
         return 0
     else
-        log_error "Installation validation failed with $errors errors"
+        log_error "Installation validation failed with ${errors} errors"
         return 1
     fi
 }
@@ -79,9 +78,9 @@ update_path() {
     log_info "Updating PATH for current session..."
     
     # Add local bin to PATH if not already present
-    if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
-        export PATH="$HOME/.local/bin:$PATH"
-        log_success "Added $HOME/.local/bin to PATH"
+    if [[ ":${PATH}:" != *":${HOME}/.local/bin:"* ]]; then
+        export PATH="${HOME}/.local/bin:${PATH}"
+        log_success "Added ${HOME}/.local/bin to PATH"
     fi
 }
 
@@ -90,20 +89,20 @@ set_permissions() {
     log_info "Setting executable permissions..."
     
     # Make ZUI utilities executable
-    if [[ -d "$HOME/.local/bin" ]]; then
-        find "$HOME/.local/bin" -name "zui-*" -exec chmod +x {} \; || \
+    if [[ -d "${HOME}/.local/bin" ]]; then
+        find "${HOME}/.local/bin" -name "zui-*" -exec chmod +x {} \; || \
             log_warn "Failed to set permissions for ZUI utilities"
     fi
     
     # Make polybar launch script executable
-    if [[ -f "$ZUI_PATH/common/polybar/launch.sh" ]]; then
-        chmod +x "$ZUI_PATH/common/polybar/launch.sh" || \
+    if [[ -f "${ZUI_PATH}/common/polybar/launch.sh" ]]; then
+        chmod +x "${ZUI_PATH}/common/polybar/launch.sh" || \
             log_warn "Failed to set permissions for polybar launch script"
     fi
     
     # Make system module scripts executable
-    if [[ -d "$ZUI_PATH/common/system/modules" ]]; then
-        find "$ZUI_PATH/common/system/modules" -name "*.sh" -exec chmod +x {} \; || \
+    if [[ -d "${ZUI_PATH}/common/system/modules" ]]; then
+        find "${ZUI_PATH}/common/system/modules" -name "*.sh" -exec chmod +x {} \; || \
             log_warn "Failed to set permissions for system modules"
     fi
     
@@ -118,24 +117,17 @@ create_desktop_entry() {
     local xsessions_dir="/usr/share/xsessions"
     
     # Create xsessions directory if it doesn't exist
-    if [[ ! -d "$xsessions_dir" ]]; then
-        if sudo mkdir -p "$xsessions_dir" 2>/dev/null; then
+    if [[ ! -d "${xsessions_dir}" ]]; then
+        if sudo mkdir -p "${xsessions_dir}" 2>/dev/null; then
             log_info "Created xsessions directory"
         else
             log_warn "Cannot create xsessions directory, skipping desktop entry"
             return 0
         fi
     fi
-    
 
-#     window-manager
-# preferences-desktop-display
-# applications-system
-# preferences-system
-
-
-    if [[ ! -f "$desktop_entry" ]]; then
-        if sudo tee "$desktop_entry" > /dev/null 2>&1 <<EOF; then
+    if [[ ! -f "${desktop_entry}" ]]; then
+        if sudo tee "${desktop_entry}" > /dev/null 2>&1 <<EOF; then
 [Desktop Entry]
 Name=bspwm
 Comment=Binary space partitioning window manager
@@ -159,13 +151,13 @@ EOF
 # Generate installation summary
 generate_summary() {
     echo ""
-    log_info "Installation Directory: $ZUI_PATH"
-    log_info "Configuration Directory: $CONFIG_PATH"
-    
-    if [[ -L "$ZUI_PATH/current_theme" ]]; then
+    log_info "Installation Directory: ${ZUI_PATH}"
+    log_info "Configuration Directory: ${CONFIG_PATH}"
+
+    if [[ -L "${ZUI_PATH}/current_theme" ]]; then
         local current_theme
-        current_theme=$(readlink "$ZUI_PATH/current_theme" | xargs basename)
-        log_info "Current Theme: $current_theme"
+        current_theme=$(readlink "${ZUI_PATH}/current_theme" | xargs basename)
+        log_info "Current Theme: ${current_theme}"
     fi
     
     echo ""
@@ -193,8 +185,8 @@ generate_summary() {
     if ! command -v bspwm &> /dev/null; then
         log_warn "⚠️  Warning: bspwm command not found in PATH"
     fi
-    
-    if [[ "$SHELL" != *"zsh" ]]; then
+
+    if [[ "${SHELL}" != *"zsh" ]]; then
         log_warn "⚠️  Warning: Default shell is not zsh. Run 'chsh -s /usr/bin/zsh' to change it."
     fi
 }
@@ -202,9 +194,9 @@ generate_summary() {
 # Backup current configuration
 create_backup() {
     log_info "Creating configuration backup..."
-    
-    local backup_dir="$ZUI_PATH/backups/$(date +%Y%m%d_%H%M%S)"
-    mkdir -p "$backup_dir"
+
+    local backup_dir="${ZUI_PATH}/backups/$(date +%Y%m%d_%H%M%S)"
+    mkdir -p "${backup_dir}"
     
     # List of configs to backup
     local configs_to_backup=(
@@ -214,18 +206,18 @@ create_backup() {
     )
     
     for config in "${configs_to_backup[@]}"; do
-        local config_path="$HOME/$config"
-        if [[ -e "$config_path" ]] && [[ ! -L "$config_path" ]]; then
-            cp -r "$config_path" "$backup_dir/" 2>/dev/null || \
-                log_warn "Failed to backup $config"
+        local config_path="${HOME}/${config}"
+        if [[ -e "${config_path}" ]] && [[ ! -L "${config_path}" ]]; then
+            cp -r "${config_path}" "${backup_dir}/" 2>/dev/null || \
+                log_warn "Failed to backup ${config}"
         fi
     done
-    
-    if [[ -n "$(ls -A "$backup_dir" 2>/dev/null)" ]]; then
-        log_success "Configuration backup created: $backup_dir"
-        echo "BACKUP_DIR='$backup_dir'" > "$ZUI_PATH/.last_backup"
+
+    if [[ -n "$(ls -A "${backup_dir}" 2>/dev/null)" ]]; then
+        log_success "Configuration backup created: ${backup_dir}"
+        echo "BACKUP_DIR='${backup_dir}'" > "${ZUI_PATH}/.last_backup"
     else
-        rmdir "$backup_dir" 2>/dev/null
+        rmdir "${backup_dir}" 2>/dev/null
         log_info "No existing configurations found to backup"
     fi
 }
@@ -251,16 +243,16 @@ check_compatibility() {
     # Check for conflicting window managers
     local wm_processes=("i3" "awesome" "dwm" "xmonad" "openbox")
     for wm in "${wm_processes[@]}"; do
-        if pgrep -x "$wm" > /dev/null 2>&1; then
-            log_warn "Another window manager ($wm) is running. Please stop it before using ZUI."
+        if pgrep -x "${wm}" > /dev/null 2>&1; then
+            log_warn "Another window manager (${wm}) is running. Please stop it before using ZUI."
             warnings=$((warnings + 1))
         fi
     done
-    
-    if [[ $warnings -eq 0 ]]; then
+
+    if [[ ${warnings} -eq 0 ]]; then
         log_success "System compatibility check passed"
     else
-        log_warn "System compatibility check completed with $warnings warnings"
+        log_warn "System compatibility check completed with ${warnings} warnings"
     fi
 }
 

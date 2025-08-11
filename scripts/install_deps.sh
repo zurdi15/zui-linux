@@ -117,6 +117,7 @@ authenticate_sudo() {
     fi
     
     log_success "Sudo authentication successful"
+    echo ""
 }
 
 # Check distribution
@@ -387,40 +388,6 @@ install_dunst() {
     log_success "Dunst installed successfully"
 }
 
-# Install applications
-install_applications() {
-    log_info "Installing applications..."
-    
-    # Remove default Firefox if present
-    if run_with_progress_interactive "Removing default Firefox (if present)" sudo apt remove -y firefox; then
-        log_info "Default Firefox removed"
-    else
-        log_info "Default Firefox not installed via apt"
-    fi
-    
-    if check_snap; then
-        if run_with_progress_interactive "Installing Firefox via snap" sudo snap install firefox; then
-            track_software "Firefox (Web Browser)"
-        else
-            log_warn "Failed to install Firefox via snap"
-        fi
-        
-        if run_with_progress_interactive "Installing VS Code via snap" sudo snap install code --classic; then
-            track_software "Visual Studio Code (Code Editor)"
-        else
-            log_warn "Failed to install VS Code via snap"
-        fi
-        
-        if run_with_progress_interactive "Installing Sublime Text via snap" sudo snap install sublime-text --classic; then
-            track_software "Sublime Text (Text Editor)"
-        else
-            log_warn "Failed to install Sublime Text via snap"
-        fi
-    fi
-    
-    log_success "Applications installation completed"
-}
-
 # Install StreamDeck support (optional)
 install_streamdeck() {
     log_info "Installing StreamDeck support..."
@@ -468,7 +435,6 @@ main() {
     echo "============================="
     echo ""
 
-    # Create temp directory and log file
     mkdir -p "${TMP_PATH}"
     touch "${LOG_FILE}"
     
@@ -476,10 +442,7 @@ main() {
     check_not_root
     check_distro
     authenticate_sudo
-    
-    echo ""
-    
-    # Install components
+
     install_system_packages
     install_window_manager
     install_picom
@@ -487,11 +450,9 @@ main() {
     install_audio_tools
     install_utilities
     install_dunst
-    # install_applications
     # install_streamdeck
     cleanup
-    
-    # Show summary
+
     generate_summary
 }
 
