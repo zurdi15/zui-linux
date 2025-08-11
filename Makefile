@@ -114,7 +114,3 @@ apply-theme:
 format:
 	@echo "Formatting shell scripts..."
 	@find . -name "*.sh" -exec shfmt -w {} \;
-
-validate:
-	@echo "Validating configuration files..."
-	@bash $(SCRIPTS_DIR)/validate_config.sh
