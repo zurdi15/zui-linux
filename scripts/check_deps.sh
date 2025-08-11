@@ -155,6 +155,7 @@ generate_report() {
     
     if [[ $passed_checks -eq $total_checks ]]; then
         log_info "${GREEN}System is ready for ZUI installation ✓ ${NC}"
+        echo ""
         log_info "Next steps:"
         log_info "- Install dependencies: zui.sh install-deps"
         return 0

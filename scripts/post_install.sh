@@ -158,20 +158,14 @@ EOF
 
 # Generate installation summary
 generate_summary() {
-    log_info "Generating installation summary..."
-    
     echo ""
-    echo "=============================="
-    echo "ZUI Installation Summary"
-    echo "=============================="
-    echo ""
-    echo "Installation Directory: $ZUI_PATH"
-    echo "Configuration Directory: $CONFIG_PATH"
+    log_info "Installation Directory: $ZUI_PATH"
+    log_info "Configuration Directory: $CONFIG_PATH"
     
     if [[ -L "$ZUI_PATH/current_theme" ]]; then
         local current_theme
         current_theme=$(readlink "$ZUI_PATH/current_theme" | xargs basename)
-        echo "Current Theme: $current_theme"
+        log_info "Current Theme: $current_theme"
     fi
     
     echo ""
@@ -183,28 +177,26 @@ generate_summary() {
     echo "  Super + Q            - Power menu"
     echo "  Super + L            - Lock screen"
     echo "  Super + N            - Network menu"
+    echo "  Super + (num)        - Switch to workspace (num)"
     echo ""
     echo "Utilities:"
     echo "  zui-theme           - Theme management"
     echo "  zui-wallpaper       - Wallpaper management"
     echo "  zui-reload          - Reload configuration"
     echo ""
-    echo "Next Steps:"
-    echo "1. Log out and log back in"
-    echo "2. Select 'bspwm' from your display manager"
-    echo "3. Log in to start using ZUI"
-    echo ""
+    log_info "Next Steps:"
+    log_info "- 1. Log out and log back in"
+    log_info "- 2. Select 'bspwm' from your display manager"
+    log_info "- 3. Log in to start using ZUI"
     
     # Check for potential issues
     if ! command -v bspwm &> /dev/null; then
-        echo "⚠️  Warning: bspwm command not found in PATH"
+        log_warning "⚠️  Warning: bspwm command not found in PATH"
     fi
     
     if [[ "$SHELL" != *"zsh" ]]; then
-        echo "⚠️  Warning: Default shell is not zsh. Run 'chsh -s /usr/bin/zsh' to change it."
+        log_warning "⚠️  Warning: Default shell is not zsh. Run 'chsh -s /usr/bin/zsh' to change it."
     fi
-    
-    echo "=============================="
 }
 
 # Backup current configuration
@@ -274,7 +266,10 @@ check_compatibility() {
 
 # Main post-installation function
 main() {
-    log_info "Starting post-installation configuration..."
+    echo "=============================="
+    echo -e "${BLUE}ZUI Post Installation${NC}"
+    echo "=============================="
+    echo ""
     
     # Run post-installation tasks
     create_backup
@@ -287,8 +282,6 @@ main() {
     create_desktop_entry
     check_compatibility
     generate_summary
-    
-    log_success "Post-installation configuration completed!"
 }
 
 # Run main function

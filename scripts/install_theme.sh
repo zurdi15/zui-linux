@@ -296,6 +296,9 @@ main() {
     log_success "Theme '${theme}' installed successfully!"
     log_info "Current theme: ${theme}"
     log_info "You may need to reload your shell or log out/in for all changes to take effect."
+    echo ""
+    log_info "Next steps:"
+    log_info "- Post Install: zui.sh post-install"
 }
 
 # Show usage if no arguments
