@@ -141,6 +141,11 @@ configure_network_triggers() {
 
 # Main installation function
 main() {
+    echo "=============================="
+    echo -e "${BLUE}ZUI Core Installation${NC}"
+    echo "=============================="
+    echo ""
+
     # Create temp directory if needed
     mkdir -p "${TMP_PATH}"
     
@@ -154,7 +159,7 @@ main() {
     log_success "ZUI core installation completed!"
     log_info "ZUI installed to: ${ZUI_PATH}"
     log_info "Configuration directory: ${CONFIG_PATH}"
-    log_info ""
+    echo ""
     log_info "Next steps:"
     log_info "- Install terminal configuration (optional): zui.sh install-terminal"
     log_info "- Install theme: zui.sh install-theme --theme <theme_name>"

@@ -275,8 +275,11 @@ install_neovim_plugins() {
 main() {
     local theme="${1:-}"
     
-    log_info "Starting theme installation..."
-    
+    echo "=============================="
+    echo -e "${BLUE}ZUI Theme Installation${NC}"
+    echo "=============================="
+    echo ""
+
     # Validate theme
     validate_theme "$theme" || exit 1
     

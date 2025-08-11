@@ -132,7 +132,6 @@ run_script() {
 
 # Installation functions
 install_full() {
-    log_info "Starting full ZUI installation..."
     check_deps_command
     backup_command
     install_deps_command
@@ -145,7 +144,6 @@ install_full() {
 }
 
 install_ui_only() {
-    log_info "Starting ZUI UI-only installation..."
     check_deps_command
     backup_command
     install_deps_command
@@ -166,23 +164,19 @@ install_core_command() {
 }
 
 install_terminal_command() {
-    log_info "Installing terminal configuration..."
     run_script "install_terminal.sh"
 }
 
 install_theme_command() {
-    log_info "Installing theme: $THEME"
     run_script "install_theme.sh" "$THEME"
 }
 
 post_install_command() {
-    log_info "Running post-installation setup..."
     run_script "post_install.sh"
 }
 
 # Uninstallation
 uninstall_command() {
-    log_info "Uninstalling ZUI..."
     run_script "uninstall.sh"
 }
 

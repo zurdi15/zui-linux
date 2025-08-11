@@ -462,14 +462,14 @@ generate_summary() {
 
 # Main installation function
 main() {
-    # Create temp directory and log file
-    mkdir -p "${TMP_PATH}"
-    touch "${LOG_FILE}"
-    
     echo "=============================="
     echo -e "${BLUE}ZUI Dependencies Installation${NC}"
     echo "=============================="
     echo ""
+
+    # Create temp directory and log file
+    mkdir -p "${TMP_PATH}"
+    touch "${LOG_FILE}"
     
     # Pre-flight checks
     check_not_root
