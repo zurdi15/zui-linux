@@ -29,16 +29,15 @@ source $ZSH/oh-my-zsh.sh
 export PATH=${HOME}/.local/bin:/snap/bin:/usr/sandbox/:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games:/usr/share/games:/usr/local/sbin:/usr/sbin:/sbin:${PATH}
 
 # alias
-alias ls='ls -lh --color=auto'
+alias l='lsd -lha --group-dirs=first'
+alias ll='lsd -lha --tree --group-dirs=first'
+alias ls='ls -lha --color=auto'
 alias dir='dir --color=auto'
 alias vdir='vdir --color=auto'
 alias grep='grep --color=auto'
 alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
 alias cat='/bin/batcat --paging=never'
-alias l='lsd -lha --group-dirs=first'
-alias ll='lsd -lh --tree --group-dirs=first'
-alias lll='lsd -lha --tree --group-dirs=first'
 
 # Select all suggestion instead of top on result only
 zstyle ':autocomplete:tab:*' insert-unambiguous yes
