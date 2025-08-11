@@ -55,9 +55,9 @@ This separation means you can:
 
 | Theme | Description | Screenshot |
 |-------|-------------|------------|
-| **Galaxy** | Dark theme with purple/blue accents | ./.github/resources/galaxy.png |
-| **Nord** | Clean Nordic-inspired color scheme | ./.github/resources/nord.png |
-| **Haxor** | Cyberpunk/terminal aesthetic | ./.github/resources/haxor.png |
+| **Galaxy** | Dark theme with purple/blue accents | <img src=".github/resources/galaxy.png" /> |
+| **Nord** | Clean Nordic-inspired color scheme | <img src=".github/resources/nord.png" /> |
+| **Haxor** | Cyberpunk/terminal aesthetic | <img src=".github/resources/haxor.png" /> |
 
 ## Components
 
