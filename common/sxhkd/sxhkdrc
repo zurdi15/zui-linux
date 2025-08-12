@@ -14,11 +14,11 @@ super + d
 
 # general launcher
 super + shift + d
-	rofi -show run
+	rofi -show run -theme ${HOME}/.config/rofi/themes/launcher_apps.rasi
 
 # window switcher
 super + x
-	rofi -show window
+	rofi -show window -theme ${HOME}/.config/rofi/themes/launcher_apps.rasi
 
 # powermenu launcher
 super + q
