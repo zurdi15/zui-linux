@@ -38,6 +38,22 @@ log_success() {
 	echo -e "${GREEN}[SUCCESS]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${GREEN}[SUCCESS]${NC} $1"
 }
 
+run_with_progress_interactive() {
+    local message="$1"
+    shift
+    
+    echo -ne "${BLUE}[INFO]${NC} $message "
+    
+    # Run command normally (allowing interactive prompts) but redirect output
+    if "$@" >> "${LOG_FILE}" 2>&1; then
+        echo -e "${GREEN}✓${NC}"
+        return 0
+    else
+        echo -e "${RED}✗${NC}"
+        return 1
+    fi
+}
+
 # Check if user wants terminal configuration
 confirm_terminal_installation() {
 	log_info "ZUI can optionally configure your terminal with:"
@@ -162,14 +178,20 @@ install_terminal_tools() {
 		rm -rf "${HOME}/.fzf"
 	fi
 
+	if ! run_with_progress_interactive "Installing terminal tools:\n- lsd (LSDeluxe)\n- bat (A cat clone with wings)\n- ranger (Vim-like file manager)\n- neovim (Next-generation text editor)" sudo apt install -y \
+        lsd bat ranger neovim; then
+        log_error "Failed to install terminal tools"
+        exit 1
+    fi
+
 	log_info "Installing fzf (fuzzy finder)"
 	git clone --quiet --depth 1 https://github.com/junegunn/fzf.git "${HOME}/.fzf" ||
 		log_warn "Failed to clone fzf"
 	echo -e 'y\ny\ny\n' | "${HOME}/.fzf/install" >/dev/null ||
 		log_warn "Failed to install fzf"
 
-	log_info "Installing terminal tools:\n- lsd (LSDeluxe)\n- bat (A cat clone with wings)\n- ranger (Vim-like file manager)\n- neovim (Next-generation text editor)"
-	sudo apt install lsd bat ranger neovim -y || log_warn "Failed to install terminal tools"
+	# log_info "Installing terminal tools:\n- lsd (LSDeluxe)\n- bat (A cat clone with wings)\n- ranger (Vim-like file manager)\n- neovim (Next-generation text editor)"
+	# sudo apt install lsd bat ranger neovim -y || log_warn "Failed to install terminal tools"
 
 	# log_info "Installing bat (A cat clone with wings)"
 	# sudo apt install bat -y || log_warn "Failed to install bat"
