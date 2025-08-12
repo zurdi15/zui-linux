@@ -226,7 +226,7 @@ install_omz() {
 
 	# Install for user
 	if [[ ! -d "${HOME}/.oh-my-zsh" ]]; then
-		sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" 2>/dev/null ||
+		sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended 2>/dev/null ||
 			log_warn "Failed to install user Oh My Zsh"
 	else
 		log_info "Oh My Zsh already exists for user"
@@ -234,7 +234,7 @@ install_omz() {
 
 	# Install for root
 	if [[ ! -d "/root/.oh-my-zsh" ]]; then
-		sudo sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" 2>/dev/null ||
+		sudo sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended 2>/dev/null ||
 			log_warn "Failed to install root Oh My Zsh"
 	else
 		log_info "Oh My Zsh already exists for root"
