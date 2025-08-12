@@ -198,7 +198,7 @@ install_powerlevel10k() {
 	log_info "Installing Powerlevel10k theme..."
 
 	# Install for user
-	if [[ ! -d "${HOME}/powerlevel10k" ]]; then
+	if [[ ! -d "${ZSH_CUSTOM:-${HOME}/.oh-my-zsh/custom}/themes/powerlevel10k" ]]; then
 		git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ZSH_CUSTOM:-${HOME}/.oh-my-zsh/custom}/themes/powerlevel10k" 2>/dev/null ||
 			log_warn "Failed to install user Powerlevel10k"
 	else
@@ -206,8 +206,8 @@ install_powerlevel10k() {
 	fi
 
 	# Install for root
-	if [[ ! -d "/root/powerlevel10k" ]]; then
-		git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ZSH_CUSTOM:-/root/.oh-my-zsh/custom}/themes/powerlevel10k" 2>/dev/null ||
+	if [[ ! -d "/root/.oh-my-zsh/custom/themes/powerlevel10k" ]]; then
+		git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "/root/.oh-my-zsh/custom/themes/powerlevel10k" 2>/dev/null ||
 			log_warn "Failed to install root Powerlevel10k"
 	else
 		log_info "Powerlevel10k already exists for root"
