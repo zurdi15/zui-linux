@@ -10,7 +10,7 @@ lock="󰌾  lock"
 logout="󰍃  logout"
 suspend="󰒲  suspend"
 reboot="󰑐  reboot"
-shutdown="  shutdown"
+shutdown="⏻  shutdown"
 
 # Variable passed to rofi
 options="${lock}\n${logout}\n${suspend}\n${reboot}\n${shutdown}"
