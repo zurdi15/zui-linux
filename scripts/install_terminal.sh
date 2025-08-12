@@ -168,6 +168,18 @@ install_terminal_tools() {
 	echo -e 'y\ny\ny\n' | "${HOME}/.fzf/install" >/dev/null ||
 		log_warn "Failed to install fzf"
 
+	log_info "Installing terminal tools:\n- lsd (LSDeluxe)\n- bat (A cat clone with wings)\n- ranger (Vim-like file manager)\n- neovim (Next-generation text editor)"
+	sudo apt install lsd bat ranger neovim -y || log_warn "Failed to install terminal tools"
+
+	# log_info "Installing bat (A cat clone with wings)"
+	# sudo apt install bat -y || log_warn "Failed to install bat"
+
+	# log_info "Installing ranger (Vim-like file manager)"
+	# sudo apt install ranger -y || log_warn "Failed to install ranger"
+
+	# log_info "Installing neovim (Next-generation text editor)"
+	# sudo apt install neovim -y || log_warn "Failed to install neovim"
+
 	log_success "Additional terminal tools installed"
 }
 
