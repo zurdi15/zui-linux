@@ -178,9 +178,25 @@ install_terminal_tools() {
 		rm -rf "${HOME}/.fzf"
 	fi
 
-	if ! run_with_progress_interactive "Installing terminal tools:\n- lsd (LSDeluxe)\n- bat (A cat clone with wings)\n- ranger (Vim-like file manager)\n- neovim (Next-generation text editor)" sudo apt install -y \
-        lsd bat ranger neovim; then
-        log_error "Failed to install terminal tools"
+	log_info "Installing terminal tools:"
+	if ! run_with_progress_interactive "- lsd (LSDeluxe)" sudo apt install -y \
+        lsd; then
+        log_error "Failed to install lsd"
+        exit 1
+    fi
+	if ! run_with_progress_interactive "- bat (A cat clone with wings)" sudo apt install -y \
+        bat; then
+        log_error "Failed to install bat"
+        exit 1
+    fi
+	if ! run_with_progress_interactive "- ranger (Vim-like file manager)" sudo apt install -y \
+        ranger; then
+        log_error "Failed to install ranger"
+        exit 1
+    fi
+	if ! run_with_progress_interactive "- neovim (Next-generation text editor)" sudo apt install -y \
+        neovim; then
+        log_error "Failed to install neovim"
         exit 1
     fi
 
