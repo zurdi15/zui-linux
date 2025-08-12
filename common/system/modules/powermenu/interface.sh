@@ -6,16 +6,16 @@ rofi_command="rofi -theme ${theme}"
 uptime=$(uptime -p | sed -e 's/up //g')
 
 # Options
-shutdown="襤 shutdown"
-reboot="累 reboot"
-lock=" lock"
-suspend="鈴 suspend"
-logout=" logout"
+lock="󰌾  lock"
+logout="󰍃  logout"
+suspend="󰒲  suspend"
+reboot="󰑐  reboot"
+shutdown="  shutdown"
 
 # Variable passed to rofi
-options="$shutdown\n$reboot\n$lock\n$suspend\n$logout"
+options="${lock}\n${logout}\n${suspend}\n${reboot}\n${shutdown}"
 
-chosen="$(echo -e "$options" | $rofi_command -p "$uptime: " -dmenu -selected-row 2)"
+chosen="$(echo -e "$options" | $rofi_command -dmenu -selected-row 0)"
 case $chosen in
     $shutdown)
 	ans="yes"

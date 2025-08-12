@@ -1,34 +1,38 @@
 # wm independent hotkeys
 
-# terminal emulator
+# Terminal
 super + Return
 	gnome-terminal
 
-# browser
+# Browser
 super + b
 	brave-browser
 
-# program launcher
+# App launcher
 super + d
-	rofi -show drun -theme ${HOME}/.config/rofi/themes/launcher_apps.rasi
+	rofi -show drun -theme ${HOME}/.config/rofi/themes/launcher.rasi
 
-# general launcher
+# Command exec
 super + shift + d
-	rofi -show run -theme ${HOME}/.config/rofi/themes/launcher_apps.rasi
+	rofi -show run -theme ${HOME}/.config/rofi/themes/launcher.rasi
 
-# window switcher
+# Window switcher
 super + x
-	rofi -show window -theme ${HOME}/.config/rofi/themes/launcher_apps.rasi
+	rofi -show window -theme ${HOME}/.config/rofi/themes/launcher.rasi
 
-# powermenu launcher
+# File explorer
+super + e
+	rofi -show filebrowser -theme ${HOME}/.config/rofi/themes/launcher.rasi
+
+# Powermenu
 super + q
 	${HOME}/.zui/common/system/modules/powermenu/interface.sh
 	
-# network connection panel
+# Network panel
 super + n
 	${HOME}/.zui/common/system/modules/network/interface.sh
 
-# lock screen
+# Lock screen
 super + l
 	${HOME}/.zui/common/system/modules/lock/interface.sh
 
@@ -49,13 +53,12 @@ XF86MonBrightnessUp
 XF86MonBrightnessDown
 	${HOME}/.zui/common/system/modules/backlight/interface.sh down
 
-# make sxhkd reload its configuration files:
+# sxhkd reload
 super + Escape
 	zui-reload
 	
 
 # bspwm hotkeys
-
 # quit/restart bspwm
 super + alt + {q,r}
 	bspc {quit,wm -r}

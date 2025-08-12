@@ -59,7 +59,7 @@ function menu () {
 
 function rofi_cmd () {
   # don't repeat lines with uniq -u
-  echo -e "$1" | uniq -u | rofi -dmenu -p "直" -theme ${HOME}/.config/rofi/themes/launcher_networks.rasi -show-icons
+  echo -e "$1" | uniq -u | rofi -dmenu -p "直" -theme ${HOME}/.config/rofi/themes/launcher.rasi -show-icons
 }
 
 function rofi_menu () {
