@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-
-if [[ -f ${1} ]]; then
-    ln -sfn "$(realpath ${1})" ${HOME}/.zui/current_theme/wallpapers/current_wallpaper
-else
-    echo "${1}: file does not exists."
-fi
-
-feh --bg-fill ${HOME}/.zui/current_theme/wallpapers/current_wallpaper
