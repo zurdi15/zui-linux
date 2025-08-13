@@ -7,7 +7,7 @@ configuration {
   bg-main: #0F0A1A;
   bg-alt: #1A0B2E;
   bg-light: #4C1D95;
-  fg: #E0C3FC;
+  fg: #F8F8F2;
   accent: #A855F7;
   success: #38BDF8;
   warning: #FBBF24;
