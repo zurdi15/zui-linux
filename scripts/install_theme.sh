@@ -216,8 +216,8 @@ install_theme_resources() {
     fi
     
     # Install icons
-    if [[ -d "${ZUI_PATH}/current_theme/.icons" ]]; then
-        sudo rsync -am "${ZUI_PATH}/current_theme/.icons/" "${HOME}/.icons/" || \
+    if [[ -d "${ZUI_PATH}/common/.icons" ]]; then
+        sudo rsync -am "${ZUI_PATH}/common/.icons/" "${HOME}/.icons/" || \
             log_warn "Failed to install icons"
     fi
     
