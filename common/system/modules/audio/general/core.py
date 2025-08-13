@@ -79,10 +79,14 @@ def volume(config: dict, action: str) -> None:
         current_volume = sink.volume.value_flat
         
         if action == 'up':
+            if sink.mute:
+                pulse.mute(sink, False)
             new_volume = min(current_volume + VOLUME_STEP, MAX_VOLUME)
             pulse.volume_set_all_chans(sink, new_volume)
             send_notification(msg=f"up {int(new_volume * 100)}%")
         elif action == 'down':
+            if sink.mute:
+                pulse.mute(sink, False)
             new_volume = max(current_volume - VOLUME_STEP, MIN_VOLUME)
             pulse.volume_set_all_chans(sink, new_volume)
             send_notification(msg=f"down {int(new_volume * 100)}%")
