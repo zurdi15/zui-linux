@@ -55,14 +55,11 @@ COMMANDS:
     post-install         Run post-installation setup
     uninstall            Remove ZUI installation
     clean                Clean temporary files
-    test                 Run tests
-    lint                 Run shellcheck on scripts
     check-deps           Check system dependencies
     backup               Backup existing configurations
     restore              Restore configurations from backup
     list-themes          List available themes
     apply-theme          Apply a specific theme
-    format               Format shell scripts
     help                 Show this help message
 
 OPTIONS:
@@ -188,20 +185,6 @@ clean_command() {
     log_success "Cleanup completed!"
 }
 
-test_command() {
-    run_script "test/run_tests.sh"
-}
-
-lint_command() {
-    if command -v shellcheck >/dev/null 2>&1; then
-        find . -name "*.sh" -exec shellcheck {} \;
-        log_success "Linting completed!"
-    else
-        log_error "shellcheck not installed. Install with: sudo apt install shellcheck"
-        exit 1
-    fi
-}
-
 check_deps_command() {
     run_script "check_deps.sh"
 }
@@ -233,18 +216,6 @@ list_themes_command() {
 apply_theme_command() {
     log_info "Applying theme: ${THEME}"
     run_script "apply_theme.sh" "${THEME}"
-}
-
-# Development commands
-format_command() {
-    log_info "Formatting shell scripts..."
-    if command -v shfmt >/dev/null 2>&1; then
-        find . -name "*.sh" -exec shfmt -w {} \;
-        log_success "Formatting completed!"
-    else
-        log_error "shfmt not installed. Install from: https://github.com/mvdan/sh"
-        exit 1
-    fi
 }
 
 # Main function
@@ -289,12 +260,6 @@ main() {
         clean)
             clean_command
             ;;
-        test)
-            test_command
-            ;;
-        lint)
-            lint_command
-            ;;
         check-deps)
             check_deps_command
             ;;
@@ -309,9 +274,6 @@ main() {
             ;;
         apply-theme)
             apply_theme_command
-            ;;
-        format)
-            format_command
             ;;
         help)
             show_help
