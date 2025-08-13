@@ -1,4 +1,5 @@
 configuration {
+  modes: "window,run,ssh,drun,filebrowser";
   font: "Iosevka Nerd Font 12";
   show-icons: true;
   display-drun: "󰀻";
@@ -9,6 +10,8 @@ configuration {
   window-display-format: "{icon} {name}";
   display-filebrowser: "󰉓";
   filebrowser-display-format: "{icon} {name}";
+  display-ssh: "󰛳";
+  ssh-display-format: "{name}";
 }
 
 * {
@@ -73,7 +76,7 @@ entry {
   placeholder: "";
   placeholder-color: @bg-light;
   cursor: text;
-  padding: 8px 0px;
+  padding: 8px;
 }
 
 listview {
