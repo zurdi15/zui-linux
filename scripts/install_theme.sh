@@ -120,12 +120,9 @@ configure_app_symlinks() {
     # Create new symlinks
     # bspwm
     ln -sfn "${ZUI_PATH}/common/bspwm" "${CONFIG_PATH}/bspwm"
-    
+
     # rofi - need to link themes first
-    if [[ -d "${ZUI_PATH}/current_theme/rofi/themes" ]]; then
-        ln -sfn "${ZUI_PATH}/current_theme/rofi/themes" "${ZUI_PATH}/common/rofi/themes"
-    fi
-    ln -sfn "${ZUI_PATH}/common/rofi" "${CONFIG_PATH}/rofi"
+    ln -sfn "${ZUI_PATH}/current_theme/rofi" "${CONFIG_PATH}/rofi"
     
     # dunst
     if [[ -d "${ZUI_PATH}/current_theme/dunst" ]]; then

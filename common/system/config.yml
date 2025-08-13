@@ -38,47 +38,29 @@ audio:
 
 
 bspc_rules_single_monitor:
-  Google-chrome:
+  Brave-browser:
     desktop: 1
     follow: on
   Code:
     desktop: 2
     follow: on
-  Sublime_text:
-    desktop: 4
+  Gnome-terminal:
+    desktop: 3
     follow: on
-  firefox:
-    desktop: 5
-    follow: on
-  "Microsoft Teams - Preview":
-    desktop: 6
-    follow: off
-  Slack:
-    desktop: 7
-    follow: off
   Spotify:
-    desktop: 8
+    desktop: 4
     follow: on
 
 bspc_rules_dual_monitor:
-  Google-chrome:
+  Brave-browser:
     desktop: 1
     follow: on
   Code:
     desktop: 2
     follow: on
-  Sublime_text:
-    desktop: 4
+  Gnome-terminal:
+    desktop: 3
     follow: on
-  firefox:
-    desktop: 5
-    follow: on
-  "Microsoft Teams - Preview":
-    desktop: 6
-    follow: off
-  Slack:
-    desktop: 7
-    follow: off
   Spotify:
-    desktop: 8
+    desktop: 4
     follow: on
