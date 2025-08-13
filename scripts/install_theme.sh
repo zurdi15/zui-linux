@@ -16,6 +16,7 @@ BASE_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ZUI_PATH=${ZUI_PATH:-${HOME}/.zui}
 CONFIG_PATH=${CONFIG_PATH:-${HOME}/.config}
 TMP_PATH=${TMP_PATH:-/tmp/zui}
+LOG_FILE=${LOG_FILE:-/tmp/zui_theme_install.log}
 
 # Logging functions
 log_info() {
@@ -270,6 +271,12 @@ install_neovim_plugins() {
     log_success "Neovim plugins installation completed"
 }
 
+reload_bspwm() {
+    if [[ -f "${HOME}/.config/bspwm/bspwmrc" ]]; then
+        bash "${HOME}/.config/bspwm/bspwmrc" >> "${LOG_FILE}" 2>&1
+    fi
+}
+
 # Main installation function
 main() {
     local theme="${1:-}"
@@ -292,7 +299,10 @@ main() {
     configure_hardware_specific "${theme}"
     run_theme_install "${theme}"
     install_neovim_plugins
-    
+
+    # Reload bspwm to apply theme
+    reload_bspwm
+
     log_success "Theme '${theme}' installed successfully!"
     log_info "Current theme: ${theme}"
     log_info "You may need to reload your shell or log out/in for all changes to take effect."

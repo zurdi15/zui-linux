@@ -213,11 +213,6 @@ list_themes_command() {
     fi
 }
 
-apply_theme_command() {
-    log_info "Applying theme: ${THEME}"
-    run_script "apply_theme.sh" "${THEME}"
-}
-
 # Main function
 main() {
     local COMMAND=""
@@ -233,6 +228,9 @@ main() {
     
     # Execute command
     case "${COMMAND}" in
+        check-deps)
+            check_deps_command
+            ;;
         install)
             install_full
             ;;
@@ -260,9 +258,6 @@ main() {
         clean)
             clean_command
             ;;
-        check-deps)
-            check_deps_command
-            ;;
         backup)
             backup_command
             ;;
@@ -271,9 +266,6 @@ main() {
             ;;
         list-themes)
             list_themes_command
-            ;;
-        apply-theme)
-            apply_theme_command
             ;;
         help)
             show_help
