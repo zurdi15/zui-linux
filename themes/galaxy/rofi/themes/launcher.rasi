@@ -1,23 +1,31 @@
 configuration {
+  modes: "window,run,ssh,drun,filebrowser";
   font: "Iosevka Nerd Font 12";
   show-icons: true;
+  display-drun: "󰀻";
   drun-display-format: "{icon} {name}";
-  display-run: " ";
-  display-window: " ";
-  modi: "run,window";
+  display-run: "󰞷";
+  run-display-format: "{name}";
+  display-window: "";
+  window-display-format: "{icon} {name}";
+  display-filebrowser: "󰉓";
+  filebrowser-display-format: "{icon} {name}";
+  display-ssh: "󰛳";
+  ssh-display-format: "{name}";
 }
 
 * {
-  // Galaxy theme colors
-  bg-main: #472B7A;
-  bg-alt: #6E46A4;
-  bg-light: #9B6BDF;
-  fg: #F8F8F2;
-  accent: #E4F34A;
-  success: #42E66C;
-  warning: #EFA554;
-  error: #E64747;
-  info: #75D7EC;
+  // Galaxy theme colors inspired by cosmic nebula
+  bg-main: #0F0A1A;
+  bg-alt: #1A0B2E;
+  bg-light: #4C1D95;
+  fg: #E0C3FC;
+  accent: #A855F7;
+  success: #38BDF8;
+  warning: #FBBF24;
+  error: #F472B6;
+  info: #C084FC;
+  stellar-glow: #E879F9;
   
   background-color: transparent;
   text-color: @fg;
@@ -29,13 +37,14 @@ configuration {
 }
 
 window {
-  width: 35%;
-  height: 60%;
+  width: 520px;
   background-color: @bg-main;
   border: 2px;
   border-color: @bg-light;
   border-radius: 12px;
   transparency: "real";
+  location: center;
+  anchor: center;
 }
 
 mainbox {
@@ -57,17 +66,17 @@ prompt {
   enabled: true;
   background-color: transparent;
   text-color: @accent;
-  padding: 8px 0px;
+  padding: 8px;
   font: "Iosevka Nerd Font Bold 13";
 }
 
 entry {
   background-color: transparent;
   text-color: @fg;
-  placeholder: "Search...";
+  placeholder: "";
   placeholder-color: @bg-light;
   cursor: text;
-  padding: 8px 0px;
+  padding: 8px;
 }
 
 listview {

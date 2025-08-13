@@ -1,6 +1,5 @@
 configuration {
   font: "Iosevka Nerd Font 13";
-  show-icons: false;
 }
 
 * {
@@ -25,11 +24,11 @@ configuration {
 }
 
 window {
-  width: 12%;
+  width: 220px;
   background-color: @bg-main;
   border: 2px;
-  border-color: @accent;
-  border-radius: 8px;
+  border-color: @bg-light;
+  border-radius: 12px;
   transparency: "real";
   location: center;
   anchor: center;
@@ -39,18 +38,18 @@ mainbox {
   children: [listview];
   background-color: transparent;
   padding: 15px;
-  spacing: 0px;
+  spacing: 15px;
 }
 
 listview {
-  lines: 5;
   columns: 1;
+  lines: 8;
   cycle: false;
-  dynamic: false;
+  dynamic: true;
   scrollbar: false;
   layout: vertical;
   reverse: false;
-  fixed-height: true;
+  fixed-height: false;
   fixed-columns: true;
   background-color: transparent;
   spacing: 4px;
@@ -59,13 +58,13 @@ listview {
 }
 
 element {
-  orientation: vertical;
-  children: [element-text];
+  orientation: horizontal;
+  children: [element-icon, element-text];
   background-color: transparent;
   text-color: @fg;
-  border-radius: 4px;
-  padding: 18px;
-  spacing: 0px;
+  border-radius: 6px;
+  padding: 10px;
+  spacing: 12px;
   border: 0px;
 }
 
@@ -74,11 +73,22 @@ element normal.normal {
   text-color: @fg;
 }
 
+element alternate.normal {
+  background-color: transparent;
+  text-color: @fg;
+}
+
 element selected.normal {
   background-color: @bg-light;
-  text-color: @accent;
-  border: 2px;
+  text-color: @fg;
+  border: 1px;
   border-color: @accent;
+}
+
+element-icon {
+  background-color: transparent;
+  size: 24px;
+  cursor: inherit;
 }
 
 element-text {
@@ -86,6 +96,5 @@ element-text {
   text-color: inherit;
   cursor: inherit;
   vertical-align: 0.5;
-  horizontal-align: 0.5;
-  font: "Iosevka Nerd Font Bold 14";
+  horizontal-align: 0.0;
 }
