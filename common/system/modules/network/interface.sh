@@ -33,14 +33,14 @@ function toggle_wifi () {
 }
 
 function current_connection () {
-  CURRENT_SSID=$(iwgetid -r)
+  CURRENT_SSID=$(nmcli -t -f active,ssid dev wifi | awk -F':' '$1=="yes" {print $2}')
   [[ "$CURRENT_SSID" != '' ]] && currcon="Disconnect from $CURRENT_SSID" || currcon=""
   echo $currcon
 }
 
 function nmcli_list () {
   # get list of available connections without the active connection (if it's connected)
-  CURRENT_SSID=$(iwgetid -r)
+  CURRENT_SSID=$(nmcli -t -f active,ssid dev wifi | awk -F':' '$1=="yes" {print $2}')
   echo "$(nmcli --fields IN-USE,SSID,SECURITY,BARS device wifi list | sed "s/^IN-USE\s//g" | sed '/*/d' | sed 's/^ *//' | sed '/^SSID\s/d')"
 }
 
@@ -59,7 +59,7 @@ function menu () {
 
 function rofi_cmd () {
   # don't repeat lines with uniq -u
-  echo -e "$1" | uniq -u | rofi -dmenu -p "直" -theme ${HOME}/.config/rofi/themes/launcher.rasi -show-icons
+  echo -e "$1" | uniq -u | rofi -dmenu -p "直" -theme ${HOME}/.config/rofi/themes/launcher.rasi
 }
 
 function rofi_menu () {
@@ -100,17 +100,30 @@ function main () {
       if [ "$MPASS" = "" ]; then
         nmcli dev wifi con "$MSSID"
       elif [ "$MSSID" != '' ] && [ "$MPASS" != '' ]; then
-        nmcli dev wifi con "$MSSID" password "$MPASS"
+        # Try to connect with automatic security detection first
+        nmcli dev wifi con "$MSSID" password "$MPASS" || \
+        # If that fails, try with explicit WPA key management
+        nmcli con add type wifi con-name "$MSSID" ifname wlan0 ssid "$MSSID" wifi-sec.key-mgmt wpa-psk wifi-sec.psk "$MPASS" && \
+        nmcli con up "$MSSID"
       fi
 
     else
         if [[ "$OPS" =~ "WPA2" ]] || [[ "$OPS" =~ "WEP" ]]; then
-          WIFIPASS=$(echo -en "" | rofi -dmenu -password -p "$(echo ${OPS} | xargs | cut -d" " -f1)  :" -theme ${HOME}/.config/rofi/themes/launcher_networks_password.rasi)
+          WIFIPASS=$(echo -en "" | rofi -dmenu -password -p "$(echo ${OPS} | xargs | cut -d" " -f1)  :" -theme ${HOME}/.config/rofi/themes/launcher.rasi)
         fi
 
         if [[ "$CHSSID" != '' ]] && [[ "$WIFIPASS" != '' ]]; then
-          nmcli dev wifi con "$CHSSID" password "$WIFIPASS"
-          if [[ $? -eq 0 ]]; then notify-send "Network 直" "Connected to: ${CHSSID}"; else notify-send "Network 直" "Invalid password for: ${CHSSID}"; fi
+          # Try to connect with automatic security detection first
+          nmcli dev wifi con "$CHSSID" password "$WIFIPASS" || \
+          # If that fails, try with explicit WPA key management
+          (nmcli con add type wifi con-name "$CHSSID" ifname wlan0 ssid "$CHSSID" wifi-sec.key-mgmt wpa-psk wifi-sec.psk "$WIFIPASS" && \
+          nmcli con up "$CHSSID")
+
+          if [[ $? -eq 0 ]]; then
+            notify-send "Network 直" "Connected to: ${CHSSID}"
+          else
+            notify-send "Network 直" "Failed to connect to: ${CHSSID}"
+          fi
         fi
     fi
 }
@@ -120,13 +133,13 @@ function get_icon () {
   WIFI=$(nmcli device | grep wifi | grep " con")
 
   if [[ ${ETHERNET} ]]; then
-    notify-send "Network " "Connected to ethernet";
-    echo ''
+    notify-send "Network 󰈀" "Connected to ethernet";
+    echo '󰈀'
   elif [[ ${WIFI} ]]; then
     echo '直'
   else
-    notify-send "Network " "Disconnected from internet";
-    echo ''
+    notify-send "Network " "Disconnected from internet";
+    echo ''
   fi
 }
 
