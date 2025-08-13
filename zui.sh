@@ -52,6 +52,7 @@ COMMANDS:
     install-core         Install only UI core components
     install-terminal     Install terminal configuration (optional)
     install-theme        Install theme
+    set-wallpaper        Set wallpaper (requires path to image file)
     post-install         Run post-installation setup
     uninstall            Remove ZUI installation
     clean                Clean temporary files
@@ -59,7 +60,6 @@ COMMANDS:
     backup               Backup existing configurations
     restore              Restore configurations from backup
     list-themes          List available themes
-    apply-theme          Apply a specific theme
     help                 Show this help message
 
 OPTIONS:
@@ -99,9 +99,8 @@ parse_args() {
                 if [[ -z "${COMMAND:-}" ]]; then
                     COMMAND="$1"
                 else
-                    log_error "Unknown option: $1"
-                    show_help
-                    exit 1
+                    # Store additional arguments for commands that need them
+                    COMMAND_ARGS+=("$1")
                 fi
                 shift
                 ;;
@@ -213,9 +212,51 @@ list_themes_command() {
     fi
 }
 
+# Wallpaper management
+wallpaper_command() {
+    local wallpaper_path="${1:-}"
+
+    if [[ -z "${wallpaper_path}" ]]; then
+        log_error "Please provide a path to the wallpaper image file"
+        echo "Usage: $0 wallpaper /path/to/image.jpg"
+        exit 1
+    fi
+
+    if [[ ! -f "${wallpaper_path}" ]]; then
+        log_error "${wallpaper_path}: file does not exist"
+        exit 1
+    fi
+
+    # Check if ZUI is installed
+    if [[ ! -d "${INSTALL_DIR}" ]]; then
+        log_error "ZUI is not installed. Please run '$0 install' first."
+        exit 1
+    fi
+
+    # Check if current theme directory exists
+    if [[ ! -d "${INSTALL_DIR}/current_theme/wallpapers" ]]; then
+        log_error "Current theme wallpapers directory not found. Please reinstall ZUI theme."
+        exit 1
+    fi
+
+    # Create symbolic link to the new wallpaper
+    log_info "Setting wallpaper to: ${wallpaper_path}"
+    ln -sfn "$(realpath "${wallpaper_path}")" "${INSTALL_DIR}/current_theme/wallpapers/current_wallpaper"
+
+    # Apply the wallpaper using feh
+    if command -v feh >/dev/null 2>&1; then
+        feh --bg-fill "${INSTALL_DIR}/current_theme/wallpapers/current_wallpaper"
+        log_success "Wallpaper changed successfully!"
+    else
+        log_warning "feh not found. Please install feh to apply wallpapers automatically."
+        log_info "You can manually apply the wallpaper with: feh --bg-fill ${INSTALL_DIR}/current_theme/wallpapers/current_wallpaper"
+    fi
+}
+
 # Main function
 main() {
     local COMMAND=""
+    local COMMAND_ARGS=()
     
     # Parse arguments
     parse_args "$@"
@@ -249,8 +290,14 @@ main() {
         install-theme)
             install_theme_command
             ;;
+        list-themes)
+            list_themes_command
+            ;;
         post-install)
             post_install_command
+            ;;
+        set-wallpaper)
+            wallpaper_command "${COMMAND_ARGS[@]}"
             ;;
         uninstall)
             uninstall_command
@@ -263,9 +310,6 @@ main() {
             ;;
         restore)
             restore_command
-            ;;
-        list-themes)
-            list_themes_command
             ;;
         help)
             show_help
