@@ -145,19 +145,19 @@ configure_network_triggers() {
     fi
     
     # Install network triggers
-    if ! run_with_progress "- Installing network up trigger" sudo cp "${TMP_PATH}/trigger-check-network" /etc/network/if-up.d/; then
+    if ! run_with_progress "- Installing network up trigger" sudo ln -snf "${TMP_PATH}/trigger-check-network" /etc/network/if-up.d/trigger-check-network; then
         log_warn "Failed to install network up trigger"
     fi
 
-    if ! run_with_progress "- Installing network down trigger" sudo cp "${TMP_PATH}/trigger-check-network" /etc/network/if-down.d/; then
+    if ! run_with_progress "- Installing network down trigger" sudo ln -snf "${TMP_PATH}/trigger-check-network" /etc/network/if-down.d/trigger-check-network; then
         log_warn "Failed to install network down trigger"
     fi
 
-    if ! run_with_progress "- Installing network post-down trigger" sudo cp "${TMP_PATH}/trigger-check-network" /etc/network/if-post-down.d/; then
+    if ! run_with_progress "- Installing network post-down trigger" sudo ln -snf "${TMP_PATH}/trigger-check-network" /etc/network/if-post-down.d/trigger-check-network; then
         log_warn "Failed to install network post-down trigger"
     fi
 
-    if ! run_with_progress "- Installing network pre-up trigger" sudo cp "${TMP_PATH}/trigger-check-network" /etc/network/if-pre-up.d/; then
+    if ! run_with_progress "- Installing network pre-up trigger" sudo ln -snf "${TMP_PATH}/trigger-check-network" /etc/network/if-pre-up.d/trigger-check-network; then
         log_warn "Failed to install network pre-up trigger"
     fi
     echo ""
