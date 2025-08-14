@@ -156,8 +156,8 @@ main() {
     install_common_configs
     configure_permissions
     configure_network_triggers
-    
-    log_success "ZUI core installation completed!"
+
+    echo ""
     log_info "ZUI installed to: ${ZUI_PATH}"
     log_info "Configuration directory: ${CONFIG_PATH}"
     echo ""
