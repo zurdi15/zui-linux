@@ -14,109 +14,170 @@ NC='\033[0m' # No Color
 # Configuration
 ZUI_PATH=${ZUI_PATH:-${HOME}/.zui}
 CONFIG_PATH=${CONFIG_PATH:-${HOME}/.config}
+TMP_PATH=${TMP_PATH:-/tmp/zui}
+LOG_FILE="${TMP_PATH}/post_install.log"
+
+# Ensure log directory exists
+mkdir -p "${TMP_PATH}"
 
 # Logging functions
 log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
+    echo -e "${BLUE}[INFO]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${BLUE}[INFO]${NC} $1"
 }
 
 log_warn() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
+    echo -e "${YELLOW}[WARN]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${YELLOW}[WARN]${NC} $1"
 }
 
 log_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
+    echo -e "${RED}[ERROR]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${RED}[ERROR]${NC} $1"
 }
 
 log_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
+    echo -e "${GREEN}[SUCCESS]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
+
+# Progress indicator
+show_progress() {
+    local pid=$1
+    local message="$2"
+    local spinner='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
+    local i=0
+    
+    echo -ne "${BLUE}[INFO]${NC} ${message} "
+    while kill -0 "${pid}" 2>/dev/null; do
+        printf "${spinner:$i:1}"
+        sleep 0.1
+        printf "\b"
+        i=$(( (i+1) % ${#spinner} ))
+    done
+    echo -e "${GREEN}✓${NC}"
+}
+
+# Silent command execution with progress
+run_with_progress() {
+    local message="$1"
+    shift
+
+    # For sudo commands, ensure credentials are fresh
+    if [[ "$1" == "sudo" ]]; then
+        sudo -v 2>/dev/null || true
+    fi
+
+    # Run command in background and capture output
+    "$@" >> "${LOG_FILE}" 2>&1 &
+    local pid=$!
+
+    show_progress "${pid}" "${message}"
+
+    # Wait for completion and check exit code
+    wait "${pid}"
+    return $?
 }
 
 # Validate installation
 validate_installation() {
-    log_info "Validating ZUI installation..."
+    log_info "Validating ZUI installation"
     
     local errors=0
     
     # Check ZUI directory structure
-    if [[ ! -d "${ZUI_PATH}" ]]; then
+    if ! run_with_progress "- Checking ZUI directory structure" test -d "${ZUI_PATH}"; then
         log_error "ZUI directory not found: ${ZUI_PATH}"
         ((errors++))
     fi
     
     # Check current theme link
-    if [[ ! -L "${ZUI_PATH}/current_theme" ]]; then
-        log_error "Current theme link not found: ${ZUI_PATH}/current_theme"
+    if ! run_with_progress "- Validating current theme symlink" test -L "${ZUI_PATH}/current_theme"; then
+        log_warn "Current theme link not found: ${ZUI_PATH}/current_theme"
         ((errors++))
     fi
     
     # Check essential configs
-    local essential_configs=("bspwm" "sxhkd")
-    for config in "${essential_configs[@]}"; do
-        if [[ ! -L "${CONFIG_PATH}/${config}" ]]; then
-            log_error "Essential config link missing: ${CONFIG_PATH}/${config}"
+    local essential_missing=0
+    if [[ ! -L "${CONFIG_PATH}/bspwm" ]]; then
+        log_error "Essential config link missing: ${CONFIG_PATH}/bspwm"
+        essential_missing=1
+    fi
+    if [[ ! -L "${CONFIG_PATH}/sxhkd" ]]; then
+        log_error "Essential config link missing: ${CONFIG_PATH}/sxhkd"
+        essential_missing=1
+    fi
+    
+    if [[ $essential_missing -eq 0 ]]; then
+        if ! run_with_progress "- Validating essential configuration links" true; then
+            log_error "Essential configuration links validation failed"
             ((errors++))
         fi
-    done
+    else
+        log_error "Essential configuration links missing"
+        ((errors++))
+    fi
 
     if [[ ${errors} -eq 0 ]]; then
         log_success "Installation validation passed"
+        echo ""
         return 0
     else
         log_error "Installation validation failed with ${errors} errors"
+        echo ""
         return 1
     fi
 }
 
 # Update PATH for current session
 update_path() {
-    log_info "Updating PATH for current session..."
+    log_info "Updating environment settings"
     
     # Add local bin to PATH if not already present
     if [[ ":${PATH}:" != *":${HOME}/.local/bin:"* ]]; then
-        export PATH="${HOME}/.local/bin:${PATH}"
-        log_success "Added ${HOME}/.local/bin to PATH"
+        if ! run_with_progress "- Adding local bin to PATH" bash -c "export PATH='${HOME}/.local/bin:\${PATH}'"; then
+            log_warn "Failed to update PATH"
+        fi
+    else
+        log_info "- Local bin already in PATH"
     fi
+    echo ""
 }
 
 # Set executable permissions
 set_permissions() {
-    log_info "Setting executable permissions..."
+    log_info "Setting executable permissions"
     
     # Make polybar launch script executable
     if [[ -f "${ZUI_PATH}/core/polybar/launch.sh" ]]; then
-        chmod +x "${ZUI_PATH}/core/polybar/launch.sh" || \
+        if ! run_with_progress "- Setting polybar launch script permissions" chmod +x "${ZUI_PATH}/core/polybar/launch.sh"; then
             log_warn "Failed to set permissions for polybar launch script"
+        fi
     fi
     
     # Make system module scripts executable
     if [[ -d "${ZUI_PATH}/core/system/modules" ]]; then
-        find "${ZUI_PATH}/core/system/modules" -name "*.sh" -exec chmod +x {} \; || \
+        if ! run_with_progress "- Setting system module permissions" find "${ZUI_PATH}/core/system/modules" -name "*.sh" -exec chmod +x {} \;; then
             log_warn "Failed to set permissions for system modules"
+        fi
     fi
-    
-    log_success "Executable permissions set"
+    echo ""
 }
 
 # Create desktop entry for bspwm
 create_desktop_entry() {
-    log_info "Creating desktop entry for BSPWM..."
+    log_info "Creating desktop session entry"
     
     local desktop_entry="/usr/share/xsessions/bspwm.desktop"
     local xsessions_dir="/usr/share/xsessions"
     
     # Create xsessions directory if it doesn't exist
     if [[ ! -d "${xsessions_dir}" ]]; then
-        if sudo mkdir -p "${xsessions_dir}" 2>/dev/null; then
-            log_info "Created xsessions directory"
-        else
+        if ! run_with_progress "- Creating xsessions directory" sudo mkdir -p "${xsessions_dir}"; then
             log_warn "Cannot create xsessions directory, skipping desktop entry"
+            echo ""
             return 0
         fi
     fi
 
     if [[ ! -f "${desktop_entry}" ]]; then
-        if sudo tee "${desktop_entry}" > /dev/null 2>&1 <<EOF; then
+        if ! run_with_progress "- Creating bspwm desktop entry" sudo tee "${desktop_entry}" <<EOF; then
 [Desktop Entry]
 Name=bspwm
 Comment=Binary space partitioning window manager
@@ -128,17 +189,17 @@ X-LightDM-DesktopName=bspwm
 DesktopNames=bspwm
 Keywords=tiling;wm;windowmanager;window;manager;
 EOF
-            log_success "Desktop entry created"
-        else
             log_warn "Cannot create desktop entry (permission denied)"
         fi
     else
-        log_info "Desktop entry already exists"
+        log_info "- Desktop entry already exists"
     fi
+    echo ""
 }
 
 # Generate installation summary
 generate_summary() {
+    log_info "Installation completed successfully!"
     echo ""
     log_info "Installation Directory: ${ZUI_PATH}"
     log_info "Configuration Directory: ${CONFIG_PATH}"
@@ -149,6 +210,8 @@ generate_summary() {
         log_info "Current Theme: ${current_theme}"
     fi
     
+    echo ""
+    log_info "Installation log: ${LOG_FILE}"
     echo ""
     echo "Key Shortcuts:"
     echo "  Super + Return       - Terminal"
@@ -177,67 +240,78 @@ generate_summary() {
 
 # Backup current configuration
 create_backup() {
-    log_info "Creating configuration backup..."
+    log_info "Creating configuration backup"
 
     local backup_dir="${ZUI_PATH}/backups/$(date +%Y%m%d_%H%M%S)"
-    mkdir -p "${backup_dir}"
     
-    # List of configs to backup
-    local configs_to_backup=(
-        ".zshrc" ".p10k.zsh" ".vimrc" ".gitconfig"
-        ".config/bspwm" ".config/sxhkd" ".config/polybar"
-        ".config/rofi" ".config/dunst" ".config/picom"
-    )
+    if ! run_with_progress "- Creating backup directory" mkdir -p "${backup_dir}"; then
+        log_warn "Failed to create backup directory"
+        echo ""
+        return 1
+    fi
     
-    for config in "${configs_to_backup[@]}"; do
-        local config_path="${HOME}/${config}"
-        if [[ -e "${config_path}" ]] && [[ ! -L "${config_path}" ]]; then
-            cp -r "${config_path}" "${backup_dir}/" 2>/dev/null || \
-                log_warn "Failed to backup ${config}"
-        fi
-    done
-
-    if [[ -n "$(ls -A "${backup_dir}" 2>/dev/null)" ]]; then
-        log_success "Configuration backup created: ${backup_dir}"
+    # Backup configurations
+    if ! run_with_progress "- Backing up existing configurations" bash -c "
+        configs_to_backup=('.zshrc' '.p10k.zsh' '.vimrc' '.gitconfig' '.config/bspwm' '.config/sxhkd' '.config/polybar' '.config/rofi' '.config/dunst' '.config/picom')
+        backed_up=0
+        for config in \"\${configs_to_backup[@]}\"; do
+            config_path='${HOME}/\${config}'
+            if [[ -e \"\${config_path}\" ]] && [[ ! -L \"\${config_path}\" ]]; then
+                if cp -r \"\${config_path}\" '${backup_dir}/' 2>/dev/null; then
+                    backed_up=1
+                fi
+            fi
+        done
+        exit \$backed_up
+    "; then
         echo "BACKUP_DIR='${backup_dir}'" > "${ZUI_PATH}/.last_backup"
     else
-        rmdir "${backup_dir}" 2>/dev/null
-        log_info "No existing configurations found to backup"
+        rmdir "${backup_dir}" 2>/dev/null || true
+        log_info "- No existing configurations found to backup"
     fi
+    echo ""
 }
 
 # Check system compatibility
 check_compatibility() {
-    log_info "Checking system compatibility..."
+    log_info "Checking system compatibility"
     
     local warnings=0
     
     # Check if running in X11
     if [[ -n "${WAYLAND_DISPLAY:-}" ]]; then
-        log_warn "Wayland detected. ZUI is designed for X11 and may not work properly."
+        log_warn "- Wayland detected. ZUI is designed for X11 and may not work properly"
         warnings=$((warnings + 1))
+    else
+        log_info "- X11 environment detected"
     fi
     
-    # Check display manager (allow command to fail)
-    if ! systemctl is-active --quiet gdm lightdm sddm 2>/dev/null; then
-        log_warn "No common display manager detected. You may need to configure session manually."
+    # Check display manager
+    if ! run_with_progress "- Checking display manager" bash -c "systemctl is-active --quiet gdm lightdm sddm 2>/dev/null"; then
+        log_warn "- No common display manager detected. You may need to configure session manually"
         warnings=$((warnings + 1))
     fi
     
     # Check for conflicting window managers
-    local wm_processes=("i3" "awesome" "dwm" "xmonad" "openbox")
-    for wm in "${wm_processes[@]}"; do
-        if pgrep -x "${wm}" > /dev/null 2>&1; then
-            log_warn "Another window manager (${wm}) is running. Please stop it before using ZUI."
-            warnings=$((warnings + 1))
-        fi
-    done
+    if ! run_with_progress "- Checking for conflicting window managers" bash -c "
+        wm_processes=('i3' 'awesome' 'dwm' 'xmonad' 'openbox')
+        for wm in \"\${wm_processes[@]}\"; do
+            if pgrep -x \"\${wm}\" > /dev/null 2>&1; then
+                echo \"Another window manager (\${wm}) is running. Please stop it before using ZUI.\" >&2
+                exit 1
+            fi
+        done
+    "; then
+        log_warn "- Conflicting window manager detected"
+        warnings=$((warnings + 1))
+    fi
 
     if [[ ${warnings} -eq 0 ]]; then
         log_success "System compatibility check passed"
     else
         log_warn "System compatibility check completed with ${warnings} warnings"
     fi
+    echo ""
 }
 
 # Main post-installation function

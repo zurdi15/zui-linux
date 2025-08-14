@@ -53,9 +53,9 @@ XF86MonBrightnessUp
 XF86MonBrightnessDown
 	${HOME}/.zui/core/system/modules/backlight/interface.sh down
 
-# sxhkd reload
-#super + Escape
-#	show-keybinds
+# sxhkd reload and keybinds
+super + Escape
+	${HOME}/.zui/core/system/modules/keybinds/interface.sh || pkill -USR1 -x sxhkd
 	
 
 # bspwm hotkeys
