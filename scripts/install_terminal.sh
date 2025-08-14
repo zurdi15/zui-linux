@@ -162,10 +162,10 @@ install_zsh_plugins() {
 		log_warn "Failed to install zsh-autocomplete"
 
 	# Install ZUI-specific sudo plugin
-	if [[ -d "${BASE_PATH}/redist/zsh-plugins/zsh-sudo" ]]; then
-		sudo cp -r "${BASE_PATH}/redist/zsh-plugins/zsh-sudo" /usr/share/zsh/zsh-plugins/ ||
-			log_warn "Failed to install zsh-sudo plugin"
-	fi
+	# if [[ -d "${BASE_PATH}/redist/zsh-plugins/zsh-sudo" ]]; then
+	# 	sudo cp -r "${BASE_PATH}/redist/zsh-plugins/zsh-sudo" /usr/share/zsh/zsh-plugins/ ||
+	# 		log_warn "Failed to install zsh-sudo plugin"
+	# fi
 
 	log_success "Zsh plugins installed"
 }
@@ -350,7 +350,7 @@ main() {
 	install_zsh_plugins
 	install_terminal_tools
 	set_default_shell
-	configure_root_environment
+	# configure_root_environment
 
 	log_success "ZUI terminal installation completed!"
 	log_info "Please log out and log back in to use the new shell configuration."
