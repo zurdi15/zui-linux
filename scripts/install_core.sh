@@ -76,6 +76,15 @@ run_with_progress() {
     return $?
 }
 
+# Ensure sudo credentials are cached
+authenticate_sudo() {
+    # Test sudo access and cache credentials
+    if ! sudo -v; then
+        log_error "Failed to authenticate sudo access"
+        exit 1
+    fi
+}
+
 create_zui_structure() {
     log_info "Creating ZUI folder structure"
 
@@ -171,7 +180,7 @@ main() {
     echo "====================="
     echo ""
 
-    mkdir -p "${TMP_PATH}"
+    authenticate_sudo
 
     create_zui_structure
     install_core_components
