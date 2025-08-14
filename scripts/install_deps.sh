@@ -210,7 +210,7 @@ install_window_manager() {
         track_software "sxhkd (Simple X HotKey Daemon) [from source]"
     fi
     
-    log_success "Window manager components installed"
+    log_success "Window manager components installed successfully"
 }
 
 # Install compositor
@@ -320,7 +320,7 @@ install_audio_tools() {
         fi
     fi
     
-    log_success "Audio tools installation completed"
+    log_success "Audio tools installed successfully"
 }
 
 # Install application launcher and utilities
