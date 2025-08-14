@@ -60,34 +60,7 @@ install_common_configs() {
         rsync -am "${BASE_PATH}/common/" "${ZUI_PATH}/common/"
     fi
     
-    # Copy shell configurations to shell directory
-    if [[ -d "${BASE_PATH}/common/shell" ]]; then
-        shopt -s dotglob  # Include dotfiles
-        cp "${BASE_PATH}/common/shell/"* "${ZUI_PATH}/shell/" 2>/dev/null || true
-        shopt -u dotglob  # Reset dotglob
-    fi
-    
     log_success "Common configurations installed"
-}
-
-# Install ZUI utilities
-install_zui_utilities() {
-    log_info "Installing ZUI utilities..."
-    
-    if [[ ! -d "${HOME}/.local/bin" ]]; then
-        mkdir -p "${HOME}/.local/bin"
-    fi
-    
-    # Copy utilities
-    cp "${BASE_PATH}/redist/zui-utilities/"* "${HOME}/.local/bin/" || {
-        log_error "Failed to install ZUI utilities"
-        return 1
-    }
-    
-    # Make them executable
-    chmod +x "${HOME}/.local/bin/zui-"*
-    
-    log_success "ZUI utilities installed"
 }
 
 # Configure system permissions

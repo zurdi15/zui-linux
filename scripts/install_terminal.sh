@@ -84,20 +84,21 @@ install_shell_configs() {
 	mkdir -p "${ZUI_PATH}/shell"
 
 	# Copy shell configuration files if they exist
-	if [[ -d "${BASE_PATH}/redist/shell" ]]; then
-		cp -r "${BASE_PATH}/redist/shell"/* "${ZUI_PATH}/shell/" ||
-			log_warn "Failed to copy shell configurations"
-	fi
+	if [[ -d "${BASE_PATH}/common/shell" ]]; then
+        shopt -s dotglob  # Include dotfiles
+        cp "${BASE_PATH}/common/shell/"* "${ZUI_PATH}/shell/" 2>/dev/null || true
+        shopt -u dotglob  # Reset dotglob
+    fi
 
 	# Backup existing configs if they exist
 	if [[ -f "${HOME}/.zshrc" && ! -L "${HOME}/.zshrc" ]]; then
 		log_info "Backing up existing .zshrc to .zshrc.backup"
-		cp "${HOME}/.zshrc" "${HOME}/.zshrc.backup"
+		cp "${HOME}/.zshrc" "${ZUI_PATH}/backup/shell/.zshrc.backup"
 	fi
 
 	if [[ -f "${HOME}/.p10k.zsh" && ! -L "${HOME}/.p10k.zsh" ]]; then
 		log_info "Backing up existing .p10k.zsh to .p10k.zsh.backup"
-		cp "${HOME}/.p10k.zsh" "${HOME}/.p10k.zsh.backup"
+		cp "${HOME}/.p10k.zsh" "${ZUI_PATH}/backup/shell/.p10k.zsh.backup"
 	fi
 
 	# Create symlinks to ZUI shell configs
@@ -120,8 +121,8 @@ install_shell_configs() {
 	fi
 
 	# Copy vim configuration
-	if [[ -d "${BASE_PATH}/redist/.vim" ]]; then
-		cp -r "${BASE_PATH}/redist/.vim" "${HOME}/.vim" || log_warn "Failed to copy vim config"
+	if [[ -d "${BASE_PATH}/common/.vim" ]]; then
+		cp -r "${BASE_PATH}/common/.vim" "${HOME}/.vim" || log_warn "Failed to copy vim config"
 	fi
 
 	log_success "Shell configurations installed"
