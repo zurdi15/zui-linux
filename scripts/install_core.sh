@@ -78,7 +78,7 @@ run_with_progress() {
 
 # Create ZUI directory structure
 create_zui_structure() {
-    log_info "Createing ZUI folder structure"
+    log_info "Creating ZUI folder structure"
 
     if ! run_with_progress "- Creating themes directory" mkdir -p "${ZUI_PATH}/themes"; then
         log_error "Failed to create ZUI directory structure"
