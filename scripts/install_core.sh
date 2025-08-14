@@ -16,6 +16,10 @@ BASE_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ZUI_PATH=${ZUI_PATH:-${HOME}/.zui}
 CONFIG_PATH=${CONFIG_PATH:-${HOME}/.config}
 TMP_PATH=${TMP_PATH:-/tmp/zui}
+LOG_FILE="${TMP_PATH}/install_core.log"
+
+# Ensure log directory exists
+mkdir -p "${TMP_PATH}"
 
 # Logging functions
 log_info() {
