@@ -16,26 +16,64 @@ BASE_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ZUI_PATH=${ZUI_PATH:-${HOME}/.zui}
 CONFIG_PATH=${CONFIG_PATH:-${HOME}/.config}
 TMP_PATH=${TMP_PATH:-/tmp/zui}
-LOG_FILE=${LOG_FILE:-/tmp/zui_theme_install.log}
+LOG_FILE="${TMP_PATH}/install_theme.log"
 
 # Ensure log directory exists
 mkdir -p "${TMP_PATH}"
 
 # Logging functions
 log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
+    echo -e "${BLUE}[INFO]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${BLUE}[INFO]${NC} $1"
 }
 
 log_warn() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
+    echo -e "${YELLOW}[WARN]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${YELLOW}[WARN]${NC} $1"
 }
 
 log_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
+    echo -e "${RED}[ERROR]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${RED}[ERROR]${NC} $1"
 }
 
 log_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
+    echo -e "${GREEN}[SUCCESS]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
+
+# Progress indicator
+show_progress() {
+    local pid=$1
+    local message="$2"
+    local spinner='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
+    local i=0
+    
+    echo -ne "${BLUE}[INFO]${NC} ${message} "
+    while kill -0 "${pid}" 2>/dev/null; do
+        printf "${spinner:$i:1}"
+        sleep 0.1
+        printf "\b"
+        i=$(( (i+1) % ${#spinner} ))
+    done
+    echo -e "${GREEN}✓${NC}"
+}
+
+# Silent command execution with progress
+run_with_progress() {
+    local message="$1"
+    shift
+
+    # For sudo commands, ensure credentials are fresh
+    if [[ "$1" == "sudo" ]]; then
+        sudo -v 2>/dev/null || true
+    fi
+
+    # Run command in background and capture output
+    "$@" >> "${LOG_FILE}" 2>&1 &
+    local pid=$!
+
+    show_progress "${pid}" "${message}"
+
+    # Wait for completion and check exit code
+    wait "${pid}"
+    return $?
 }
 
 # Validate theme
@@ -61,193 +99,230 @@ validate_theme() {
 copy_theme_files() {
     local theme="$1"
     
-    log_info "Copying theme files for '${theme}'..."
+    log_info "Setting up theme files"
     
-    # Create theme directory
-    mkdir -p "${ZUI_PATH}/themes/${theme}"
-    
-    # Copy theme files
-    rsync -am "${BASE_PATH}/themes/${theme}/" "${ZUI_PATH}/themes/${theme}/" || {
+    # Create theme directory and copy files
+    if ! run_with_progress "- Creating theme directory and copying files" bash -c "mkdir -p '${ZUI_PATH}/themes/${theme}' && rsync -am '${BASE_PATH}/themes/${theme}/' '${ZUI_PATH}/themes/${theme}/'"; then
         log_error "Failed to copy theme files"
         return 1
-    }
+    fi
+    echo ""
 }
 
 # Create theme symlinks
 create_theme_symlinks() {
     local theme="$1"
     
-    log_info "Creating theme symlinks..."
+    log_info "Creating theme symlinks"
     
     # Link current theme
-    ln -sfn "${ZUI_PATH}/themes/${theme}" "${ZUI_PATH}/current_theme"
+    if ! run_with_progress "- Creating current theme symlink" ln -sfn "${ZUI_PATH}/themes/${theme}" "${ZUI_PATH}/current_theme"; then
+        log_warn "Failed to create current theme symlink"
+    fi
     
     # Link current wallpaper
     if [[ -f "${ZUI_PATH}/current_theme/wallpapers/default" ]]; then
-        ln -sfn "${ZUI_PATH}/current_theme/wallpapers/default" \
-                "${ZUI_PATH}/current_theme/wallpapers/current_wallpaper"
+        if ! run_with_progress "- Creating wallpaper symlink" ln -sfn "${ZUI_PATH}/current_theme/wallpapers/default" "${ZUI_PATH}/current_theme/wallpapers/current_wallpaper"; then
+            log_warn "Failed to create wallpaper symlink"
+        fi
     elif [[ -d "${ZUI_PATH}/current_theme/wallpapers" ]]; then
         # Find first wallpaper file if default doesn't exist
         local wallpaper
         wallpaper=$(find "${ZUI_PATH}/current_theme/wallpapers" -type f \( -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" \) | head -n1)
         if [[ -n "${wallpaper}" ]]; then
-            ln -sfn "${wallpaper}" "${ZUI_PATH}/current_theme/wallpapers/current_wallpaper"
+            if ! run_with_progress "- Creating fallback wallpaper symlink" ln -sfn "${wallpaper}" "${ZUI_PATH}/current_theme/wallpapers/current_wallpaper"; then
+                log_warn "Failed to create fallback wallpaper symlink"
+            fi
         fi
     fi
+    echo ""
 }
 
 # Configure application symlinks
 configure_app_symlinks() {
     local theme="$1"
     
-    log_info "Configuring application symlinks..."
+    log_info "Configuring application symlinks"
     
     # Remove existing config links
-    local configs=(
-        "bspwm" "rofi" "dunst" "gtk-3.0" "gtk-4.0"
-        "lsd" "nvim" "picom" "polybar" "sublime-text" "sxhkd"
-    )
-    
-    for config in "${configs[@]}"; do
-        if [[ -L "${CONFIG_PATH}/${config}" ]] || [[ -d "${CONFIG_PATH}/${config}" ]]; then
-            rm -rf "${CONFIG_PATH:?}/${config}"
-        fi
-    done
+    if ! run_with_progress "- Removing existing configuration links" bash -c "
+        configs=('bspwm' 'rofi' 'dunst' 'gtk-3.0' 'gtk-4.0' 'lsd' 'nvim' 'picom' 'polybar' 'sublime-text' 'sxhkd')
+        for config in \"\${configs[@]}\"; do
+            if [[ -L '${CONFIG_PATH}/\${config}' ]] || [[ -d '${CONFIG_PATH}/\${config}' ]]; then
+                rm -rf '${CONFIG_PATH}/\${config}'
+            fi
+        done
+    "; then
+        log_warn "Failed to remove some existing configuration links"
+    fi
     
     # Create new symlinks
-    # bspwm
-    ln -sfn "${ZUI_PATH}/core/bspwm" "${CONFIG_PATH}/bspwm"
-
-    # rofi - need to link themes first
-    ln -sfn "${ZUI_PATH}/current_theme/rofi" "${CONFIG_PATH}/rofi"
+    if ! run_with_progress "- Creating core application symlinks" bash -c "
+        # bspwm and sxhkd (core components)
+        ln -sfn '${ZUI_PATH}/core/bspwm' '${CONFIG_PATH}/bspwm'
+        ln -sfn '${ZUI_PATH}/core/sxhkd' '${CONFIG_PATH}/sxhkd'
+        
+        # rofi
+        ln -sfn '${ZUI_PATH}/current_theme/rofi' '${CONFIG_PATH}/rofi'
+    "; then
+        log_warn "Failed to create some core application symlinks"
+    fi
     
-    # dunst
+    # Theme-specific symlinks
     if [[ -d "${ZUI_PATH}/current_theme/dunst" ]]; then
-        ln -sfn "${ZUI_PATH}/current_theme/dunst" "${CONFIG_PATH}/dunst"
+        if ! run_with_progress "- Creating dunst symlink" ln -sfn "${ZUI_PATH}/current_theme/dunst" "${CONFIG_PATH}/dunst"; then
+            log_warn "Failed to create dunst symlink"
+        fi
     fi
     
-    # GTK
     if [[ -d "${ZUI_PATH}/current_theme/gtk-3.0" ]]; then
-        ln -sfn "${ZUI_PATH}/current_theme/gtk-3.0" "${CONFIG_PATH}/gtk-3.0"
+        if ! run_with_progress "- Creating GTK 3.0 symlink" ln -sfn "${ZUI_PATH}/current_theme/gtk-3.0" "${CONFIG_PATH}/gtk-3.0"; then
+            log_warn "Failed to create GTK 3.0 symlink"
+        fi
     fi
+    
     if [[ -d "${ZUI_PATH}/current_theme/gtk-4.0" ]]; then
-        ln -sfn "${ZUI_PATH}/current_theme/gtk-4.0" "${CONFIG_PATH}/gtk-4.0"
+        if ! run_with_progress "- Creating GTK 4.0 symlink" ln -sfn "${ZUI_PATH}/current_theme/gtk-4.0" "${CONFIG_PATH}/gtk-4.0"; then
+            log_warn "Failed to create GTK 4.0 symlink"
+        fi
     fi
     
-    # lsd
     if [[ -d "${ZUI_PATH}/current_theme/lsd" ]]; then
-        ln -sfn "${ZUI_PATH}/current_theme/lsd" "${CONFIG_PATH}/lsd"
+        if ! run_with_progress "- Creating lsd symlink" ln -sfn "${ZUI_PATH}/current_theme/lsd" "${CONFIG_PATH}/lsd"; then
+            log_warn "Failed to create lsd symlink"
+        fi
     fi
     
-    # nvim
     if [[ -d "${ZUI_PATH}/current_theme/nvim" ]]; then
-        ln -sfn "${ZUI_PATH}/current_theme/nvim" "${CONFIG_PATH}/nvim"
+        if ! run_with_progress "- Creating neovim symlink" ln -sfn "${ZUI_PATH}/current_theme/nvim" "${CONFIG_PATH}/nvim"; then
+            log_warn "Failed to create neovim symlink"
+        fi
     fi
     
-    # picom
     if [[ -d "${ZUI_PATH}/current_theme/picom" ]]; then
-        ln -sfn "${ZUI_PATH}/current_theme/picom" "${CONFIG_PATH}/picom"
+        if ! run_with_progress "- Creating picom symlink" ln -sfn "${ZUI_PATH}/current_theme/picom" "${CONFIG_PATH}/picom"; then
+            log_warn "Failed to create picom symlink"
+        fi
     fi
     
-    # polybar - link individual files for flexibility
+    if [[ -d "${ZUI_PATH}/current_theme/sublime-text" ]]; then
+        if ! run_with_progress "- Creating sublime-text symlink" ln -sfn "${ZUI_PATH}/current_theme/sublime-text" "${CONFIG_PATH}/sublime-text"; then
+            log_warn "Failed to create sublime-text symlink"
+        fi
+    fi
+    
+    # polybar (special handling)
     if [[ -d "${ZUI_PATH}/current_theme/polybar" ]]; then
         local polybar_files=("launch.sh" "colors.ini" "main_bar.ini" "top_bars.ini" "bottom_bars.ini")
         for file in "${polybar_files[@]}"; do
             if [[ -f "${ZUI_PATH}/current_theme/polybar/${file}" ]]; then
-                ln -sfn "${ZUI_PATH}/current_theme/polybar/${file}" "${ZUI_PATH}/core/polybar/${file}"
+                if ! run_with_progress "- Creating polybar ${file} symlink" ln -sfn "${ZUI_PATH}/current_theme/polybar/${file}" "${ZUI_PATH}/core/polybar/${file}"; then
+                    log_warn "Failed to create polybar ${file} symlink"
+                fi
             fi
         done
     fi
-    ln -sfn "${ZUI_PATH}/core/polybar" "${CONFIG_PATH}/polybar"
     
-    # sublime-text
-    if [[ -d "${ZUI_PATH}/current_theme/sublime-text" ]]; then
-        ln -sfn "${ZUI_PATH}/current_theme/sublime-text" "${CONFIG_PATH}/sublime-text"
+    if ! run_with_progress "- Creating polybar config symlink" ln -sfn "${ZUI_PATH}/core/polybar" "${CONFIG_PATH}/polybar"; then
+        log_warn "Failed to create polybar config symlink"
     fi
-    
-    # sxhkd
-    ln -sfn "${ZUI_PATH}/core/sxhkd" "${CONFIG_PATH}/sxhkd"
+    echo ""
 }
 
 # Configure home directory files
 configure_home_files() {
     local theme="$1"
     
-    log_info "Configuring home directory files..."
+    log_info "Configuring home directory files"
     
     # zshrc configuration (only if terminal is not configured separately)
     if [[ -f "${ZUI_PATH}/current_theme/.zshrc" && ! -f "${ZUI_PATH}/shell/.zshrc" ]]; then
-        ln -sfn "${ZUI_PATH}/current_theme/.zshrc" "${HOME}/.zshrc"
-        # Also link for root
-        sudo ln -sfn "/home/${USER}/.zshrc" /root/.zshrc || \
-            log_warn "Failed to link zshrc for root"
+        if ! run_with_progress "- Creating zshrc symlinks" bash -c "ln -sfn '${ZUI_PATH}/current_theme/.zshrc' '${HOME}/.zshrc' && sudo ln -sfn '/home/${USER}/.zshrc' /root/.zshrc"; then
+            log_warn "Failed to create zshrc symlinks"
+        fi
     fi
+    echo ""
 }
 
 # Install theme resources
 install_theme_resources() {
     local theme="$1"
     
-    log_info "Installing theme resources..."
+    log_info "Installing theme resources"
     
-    # Install fonts
+    # Install fonts and refresh cache
     if command -v fc-cache &> /dev/null; then
-        fc-cache -v > /dev/null 2>&1 || log_warn "Failed to refresh font cache"
+        if ! run_with_progress "- Refreshing font cache" fc-cache -v; then
+            log_warn "Failed to refresh font cache"
+        fi
     fi
     
-    # Install themes
+    # Install GTK themes
     if [[ -d "${ZUI_PATH}/core/.themes" ]]; then
-        rsync -am "${ZUI_PATH}/core/.themes/" "${HOME}/.themes/" || \
+        if ! run_with_progress "- Installing GTK themes" rsync -am "${ZUI_PATH}/core/.themes/" "${HOME}/.themes/"; then
             log_warn "Failed to install GTK themes"
+        fi
     fi
     
     # Install local resources
     if [[ -d "${ZUI_PATH}/core/.local" ]]; then
-        rsync -am "${ZUI_PATH}/core/.local/" "${HOME}/.local/" || \
-            log_warn "Failed to install .local resources"
+        if ! run_with_progress "- Installing local resources" rsync -am "${ZUI_PATH}/core/.local/" "${HOME}/.local/"; then
+            log_warn "Failed to install local resources"
+        fi
     fi
     
     # Install icons
     if [[ -d "${ZUI_PATH}/core/.icons" ]]; then
-        sudo rsync -am "${ZUI_PATH}/core/.icons/" "${HOME}/.icons/" || \
+        if ! run_with_progress "- Installing icons" sudo rsync -am "${ZUI_PATH}/core/.icons/" "${HOME}/.icons/"; then
             log_warn "Failed to install icons"
+        fi
     fi
+    echo ""
 }
 
 # Configure hardware-specific settings
 configure_hardware_specific() {
     local theme="$1"
     
-    log_info "Configuring hardware-specific settings..."
+    log_info "Configuring hardware-specific settings"
     
     # Configure backlight for polybar based on GPU
     if [[ -f "${ZUI_PATH}/current_theme/polybar/bottom_bars.ini" ]]; then
         if lspci | grep -qi 'amd'; then
-            sed -i 's/intel_backlight/amdgpu_bl0/g' "${ZUI_PATH}/current_theme/polybar/bottom_bars.ini" || \
+            if ! run_with_progress "- Configuring AMD backlight settings" sed -i 's/intel_backlight/amdgpu_bl0/g' "${ZUI_PATH}/current_theme/polybar/bottom_bars.ini"; then
                 log_warn "Failed to configure AMD backlight in polybar"
+            fi
         fi
     fi
+    echo ""
 }
 
 # Run theme-specific installation
 run_theme_install() {
     local theme="$1"
     
-    log_info "Running theme-specific installation..."
+    log_info "Running theme-specific installation"
     
     if [[ -f "${BASE_PATH}/themes/${theme}/install" ]]; then
-        log_info "Executing theme install script..."
-        bash "${BASE_PATH}/themes/${theme}/install" || \
+        if ! run_with_progress "- Executing theme install script" bash "${BASE_PATH}/themes/${theme}/install"; then
             log_warn "Theme install script failed"
+        fi
     else
-        log_info "No theme-specific install script found"
+        log_info "- No theme-specific install script found"
     fi
+    echo ""
 }
 
+# Reload window manager
 reload_bspwm() {
+    log_info "Applying theme configuration"
+    
     if [[ -f "${HOME}/.config/bspwm/bspwmrc" ]]; then
-        bash "${HOME}/.config/bspwm/bspwmrc" >> "${LOG_FILE}" 2>&1
+        if ! run_with_progress "- Reloading bspwm configuration" bash "${HOME}/.config/bspwm/bspwmrc"; then
+            log_warn "Failed to reload bspwm configuration"
+        fi
     fi
+    echo ""
 }
 
 # Main installation function
@@ -271,14 +346,14 @@ main() {
     install_theme_resources "${theme}"
     configure_hardware_specific "${theme}"
     run_theme_install "${theme}"
-    install_neovim_plugins
 
     # Reload bspwm to apply theme
     reload_bspwm
 
-    echo ""
-    log_info "Current theme: ${theme}"
+    log_info "Theme '${theme}' installed successfully!"
     log_info "You may need to reload your shell or log out/in for all changes to take effect."
+    echo ""
+    log_info "Installation log: ${LOG_FILE}"
     echo ""
     log_info "Next steps:"
     log_info "- Post Install: zui.sh post-install"
