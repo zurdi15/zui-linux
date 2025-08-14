@@ -239,33 +239,26 @@ install_terminal_tools() {
 	echo ""
 }
 
-install_omz() {
-	log_info "Installing Oh My Zsh"
+configure_prompt() {
+	log_info "Configure shell prompt"
 
-	# Install for user
+	# Install omz
 	if [[ ! -d "${HOME}/.oh-my-zsh" ]]; then
-		if ! run_with_progress "- Installing Oh My Zsh for user" bash -c "sh -c \"\$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\" \"\" --unattended"; then
+		if ! run_with_progress "- Installing Oh My Zsh" bash -c "sh -c \"\$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\" \"\" --unattended"; then
 			log_warn "Failed to install user Oh My Zsh"
 		fi
 	else
-		log_info "Oh My Zsh already exists for user"
+		log_info "- Oh My Zsh already exists, skipping..."
 	fi
-	echo ""
-}
-
-# Install Powerlevel10k theme
-install_p10k() {
-	log_info "Installing Powerlevel10k theme"
-
-	# Install for user
 	if [[ ! -d "${ZSH_CUSTOM:-${HOME}/.oh-my-zsh/custom}/themes/powerlevel10k" ]]; then
-		if ! run_with_progress "- Installing Powerlevel10k for user" git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ZSH_CUSTOM:-${HOME}/.oh-my-zsh/custom}/themes/powerlevel10k"; then
-			log_warn "Failed to install user Powerlevel10k"
+		if ! run_with_progress "- Installing Powerlevel10k" git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ZSH_CUSTOM:-${HOME}/.oh-my-zsh/custom}/themes/powerlevel10k"; then
+			log_warn "Failed to install Powerlevel10k"
 		fi
 	else
-		log_info "Powerlevel10k already exists for user"
+		log_info "- Powerlevel10k already exists, skiping..."
 	fi
 	echo ""
+
 }
 
 # Set zsh as default shell
@@ -316,9 +309,9 @@ set_default_shell() {
 # Main installation function
 main() {
 	echo ""
-	echo "========================="
-	echo -e "${BLUE}ZUI Terminal Installation${NC}"
-	echo "========================="
+	echo "======================"
+	echo -e "${BLUE}ZUI Shell Installation${NC}"
+	echo "======================"
 	echo ""
 
 	# Check if ZUI is installed
@@ -331,17 +324,14 @@ main() {
 	confirm_terminal_installation
 	authenticate_sudo
 
-	install_omz
-	install_p10k
+	configure_prompt
 	install_shell_configs
 	install_zsh_plugins
 	install_terminal_tools
 	set_default_shell
 
-	echo ""
 	log_info "Terminal installation completed successfully!"
 	log_info "Please restart your terminal or run 'exec zsh' to use the new configuration."
-	echo ""
 }
 
 # Run main function if script is executed directly
