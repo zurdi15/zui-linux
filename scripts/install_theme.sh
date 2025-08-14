@@ -55,9 +55,6 @@ validate_theme() {
         done
         return 1
     fi
-    
-    log_info "Theme '${theme}' validated"
-    return 0
 }
 
 # Copy theme files
@@ -74,8 +71,6 @@ copy_theme_files() {
         log_error "Failed to copy theme files"
         return 1
     }
-    
-    log_success "Theme files copied"
 }
 
 # Create theme symlinks
@@ -99,8 +94,6 @@ create_theme_symlinks() {
             ln -sfn "${wallpaper}" "${ZUI_PATH}/current_theme/wallpapers/current_wallpaper"
         fi
     fi
-    
-    log_success "Theme symlinks created"
 }
 
 # Configure application symlinks
@@ -174,8 +167,6 @@ configure_app_symlinks() {
     
     # sxhkd
     ln -sfn "${ZUI_PATH}/core/sxhkd" "${CONFIG_PATH}/sxhkd"
-    
-    log_success "Application symlinks configured"
 }
 
 # Configure home directory files
@@ -191,8 +182,6 @@ configure_home_files() {
         sudo ln -sfn "/home/${USER}/.zshrc" /root/.zshrc || \
             log_warn "Failed to link zshrc for root"
     fi
-    
-    log_success "Home directory files configured"
 }
 
 # Install theme resources
@@ -223,8 +212,6 @@ install_theme_resources() {
         sudo rsync -am "${ZUI_PATH}/core/.icons/" "${HOME}/.icons/" || \
             log_warn "Failed to install icons"
     fi
-    
-    log_success "Theme resources installed"
 }
 
 # Configure hardware-specific settings
@@ -240,8 +227,6 @@ configure_hardware_specific() {
                 log_warn "Failed to configure AMD backlight in polybar"
         fi
     fi
-    
-    log_success "Hardware-specific settings configured"
 }
 
 # Run theme-specific installation
@@ -257,8 +242,6 @@ run_theme_install() {
     else
         log_info "No theme-specific install script found"
     fi
-    
-    log_success "Theme-specific installation completed"
 }
 
 reload_bspwm() {
@@ -293,7 +276,7 @@ main() {
     # Reload bspwm to apply theme
     reload_bspwm
 
-    log_success "Theme '${theme}' installed successfully!"
+    echo ""
     log_info "Current theme: ${theme}"
     log_info "You may need to reload your shell or log out/in for all changes to take effect."
     echo ""
