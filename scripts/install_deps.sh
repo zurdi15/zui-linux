@@ -45,8 +45,8 @@ show_progress() {
     local spinner='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
     local i=0
     
-    echo -ne "${BLUE}[INFO]${NC} $message "
-    while kill -0 $pid 2>/dev/null; do
+    echo -ne "${BLUE}[INFO]${NC} ${message}"
+    while kill -0 "${pid}" 2>/dev/null; do
         printf "${spinner:$i:1}"
         sleep 0.1
         printf "\b"
@@ -69,10 +69,10 @@ run_with_progress() {
     "$@" >> "${LOG_FILE}" 2>&1 &
     local pid=$!
     
-    show_progress $pid "$message"
+    show_progress "${pid}" "${message}"
     
     # Wait for completion and check exit code
-    wait $pid
+    wait "${pid}"
     return $?
 }
 
@@ -81,7 +81,7 @@ run_with_progress_interactive() {
     local message="$1"
     shift
     
-    echo -ne "${BLUE}[INFO]${NC} $message "
+    echo -ne "${BLUE}[INFO]${NC} ${message} "
     
     # Run command normally (allowing interactive prompts) but redirect output
     if "$@" >> "${LOG_FILE}" 2>&1; then
@@ -100,7 +100,7 @@ track_software() {
 
 # Check if running as root
 check_not_root() {
-    if [[ $EUID -eq 0 ]]; then
+    if [[ ${EUID} -eq 0 ]]; then
         log_error "This script should not be run as root"
         exit 1
     fi
@@ -168,7 +168,7 @@ install_system_packages() {
         exit 1
     fi
     
-    track_software "System packages (build tools, development libraries). Check the full packages list here: https://github.com/zurdi15/zui-linux/blob/a0483f822d753f2c6d02c6d4dc22c8e73933fb8e/scripts/install_deps.sh#L151"
+    track_software "System packages (build tools, development libraries)"
 }
 
 # Install window manager components
@@ -381,7 +381,7 @@ generate_summary() {
     else
         echo -e "${BLUE}\nNewly Installed Software:${NC}"
         for software in "${INSTALLED_SOFTWARE[@]}"; do
-            echo -e "  ${GREEN}✓${NC} $software"
+            echo -e "  ${GREEN}✓${NC} ${software}"
         done
     fi
     
