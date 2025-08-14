@@ -47,12 +47,12 @@ show_progress() {
     
     echo -ne "${BLUE}[INFO]${NC} ${message}"
     while kill -0 "${pid}" 2>/dev/null; do
-        printf "${spinner:$i:1}"
+        printf " ${spinner:$i:1}"
         sleep 0.1
         printf "\b"
         i=$(( (i+1) % ${#spinner} ))
     done
-    echo -e "${GREEN}✓${NC}"
+    echo -e "${GREEN} ✓${NC}"
 }
 
 # Silent command execution with progress
