@@ -169,7 +169,6 @@ install_system_packages() {
     fi
     
     track_software "System packages (build tools, development libraries)"
-    log_success "System prepared successfully"
 }
 
 # Install window manager components
@@ -181,7 +180,7 @@ install_window_manager() {
         track_software "bspwm (Binary Space Partitioning Window Manager)"
         track_software "sxhkd (Simple X HotKey Daemon)"
     else
-        log_info "Package manager installation failed, building from source..."
+        log_warning "Package manager installation failed, building from source..."
         
         if [[ ! -d "${TMP_PATH}/bspwm" ]]; then
             if ! run_with_progress "- Installing bspwm" bash -c "git clone https://github.com/baskerville/bspwm.git '${TMP_PATH}/bspwm' >> '${LOG_FILE}' 2>&1 && cd '${TMP_PATH}/bspwm' && make >> '${LOG_FILE}' 2>&1 && sudo make install >> '${LOG_FILE}' 2>&1"; then
@@ -209,8 +208,6 @@ install_window_manager() {
         fi
         track_software "sxhkd (Simple X HotKey Daemon) [from source]"
     fi
-    
-    log_success "Window manager components installed successfully"
 }
 
 # Install compositor
@@ -241,7 +238,6 @@ install_picom() {
     fi
     
     track_software "picom (X11 Compositor)"
-    log_success "Picom installed successfully"
 }
 
 # Install polybar
@@ -272,7 +268,6 @@ install_polybar() {
     fi
     
     track_software "polybar (Status Bar)"
-    log_success "Polybar installed successfully"
 }
 
 # Install audio components
@@ -300,8 +295,6 @@ install_audio_tools() {
             log_warn "Failed to install Spotify via snap"
         fi
     fi
-    
-    log_success "Audio tools installed successfully"
 }
 
 # Install application launcher and utilities
@@ -332,8 +325,6 @@ install_utilities() {
             log_warn "Failed to clone or install i3lock-color"
         fi
     fi
-    
-    log_success "Utilities installed successfully"
 }
 
 # Install notification daemon
@@ -359,7 +350,6 @@ install_dunst() {
     fi
     
     track_software "dunst (Notification Daemon)"
-    log_success "Dunst installed successfully"
 }
 
 # Install StreamDeck support (optional)
