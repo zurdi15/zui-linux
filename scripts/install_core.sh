@@ -100,6 +100,7 @@ create_zui_structure() {
         log_error "Failed to create ZUI directory structure"
         exit 1
     fi
+    echo ""
 }
 
 # Copy common configurations
@@ -117,6 +118,7 @@ install_common_configs() {
             exit 1
         fi
     fi
+    echo ""
 }
 
 # Configure system permissions
@@ -148,6 +150,7 @@ configure_permissions() {
     #         fi
     #     fi
     # fi
+    echo ""
 }
 
 # Configure network triggers
@@ -175,6 +178,7 @@ configure_network_triggers() {
     if ! run_with_progress "- Installing network pre-up trigger" sudo cp "${TMP_PATH}/trigger-check-network" /etc/network/if-pre-up.d/; then
         log_warn "Failed to install network pre-up trigger"
     fi
+    echo ""
 }
 
 # Main installation function
