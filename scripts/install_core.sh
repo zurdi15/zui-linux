@@ -131,7 +131,7 @@ install_core_components() {
         log_error "Failed to add user to video group"
         exit 1
     fi
-    
+
     # Configure backlight rules based on hardware
     if lspci | grep -qi 'amd'; then
         if ! run_with_progress "- Configuring AMD backlight rules" sudo cp "${BASE_PATH}/core/system/modules/backlight/amd-backlight.rules" /etc/udev/rules.d/70-backlight.rules; then

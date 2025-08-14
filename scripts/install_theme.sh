@@ -18,6 +18,9 @@ CONFIG_PATH=${CONFIG_PATH:-${HOME}/.config}
 TMP_PATH=${TMP_PATH:-/tmp/zui}
 LOG_FILE=${LOG_FILE:-/tmp/zui_theme_install.log}
 
+# Ensure log directory exists
+mkdir -p "${TMP_PATH}"
+
 # Logging functions
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $1"

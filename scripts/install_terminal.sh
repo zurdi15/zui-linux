@@ -339,9 +339,6 @@ main() {
 		exit 1
 	fi
 
-	# Create temp directory if needed
-	mkdir -p "${TMP_PATH}"
-
 	confirm_terminal_installation
 
 	install_omz

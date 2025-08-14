@@ -405,9 +405,6 @@ main() {
     echo -e "${BLUE}ZUI Dependencies Installation${NC}"
     echo "============================="
     echo ""
-
-    mkdir -p "${TMP_PATH}"
-    touch "${LOG_FILE}"
     
     # Pre-flight checks
     check_not_root
