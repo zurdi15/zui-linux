@@ -120,7 +120,7 @@ configure_app_symlinks() {
     
     # Create new symlinks
     # bspwm
-    ln -sfn "${ZUI_PATH}/common/bspwm" "${CONFIG_PATH}/bspwm"
+    ln -sfn "${ZUI_PATH}/core/bspwm" "${CONFIG_PATH}/bspwm"
 
     # rofi - need to link themes first
     ln -sfn "${ZUI_PATH}/current_theme/rofi" "${CONFIG_PATH}/rofi"
@@ -158,11 +158,11 @@ configure_app_symlinks() {
         local polybar_files=("launch.sh" "colors.ini" "main_bar.ini" "top_bars.ini" "bottom_bars.ini")
         for file in "${polybar_files[@]}"; do
             if [[ -f "${ZUI_PATH}/current_theme/polybar/${file}" ]]; then
-                ln -sfn "${ZUI_PATH}/current_theme/polybar/${file}" "${ZUI_PATH}/common/polybar/${file}"
+                ln -sfn "${ZUI_PATH}/current_theme/polybar/${file}" "${ZUI_PATH}/core/polybar/${file}"
             fi
         done
     fi
-    ln -sfn "${ZUI_PATH}/common/polybar" "${CONFIG_PATH}/polybar"
+    ln -sfn "${ZUI_PATH}/core/polybar" "${CONFIG_PATH}/polybar"
     
     # sublime-text
     if [[ -d "${ZUI_PATH}/current_theme/sublime-text" ]]; then
@@ -170,7 +170,7 @@ configure_app_symlinks() {
     fi
     
     # sxhkd
-    ln -sfn "${ZUI_PATH}/common/sxhkd" "${CONFIG_PATH}/sxhkd"
+    ln -sfn "${ZUI_PATH}/core/sxhkd" "${CONFIG_PATH}/sxhkd"
     
     log_success "Application symlinks configured"
 }
@@ -204,20 +204,20 @@ install_theme_resources() {
     fi
     
     # Install themes
-    if [[ -d "${ZUI_PATH}/common/.themes" ]]; then
-        rsync -am "${ZUI_PATH}/common/.themes/" "${HOME}/.themes/" || \
+    if [[ -d "${ZUI_PATH}/core/.themes" ]]; then
+        rsync -am "${ZUI_PATH}/core/.themes/" "${HOME}/.themes/" || \
             log_warn "Failed to install GTK themes"
     fi
     
     # Install local resources
-    if [[ -d "${ZUI_PATH}/common/.local" ]]; then
-        rsync -am "${ZUI_PATH}/common/.local/" "${HOME}/.local/" || \
+    if [[ -d "${ZUI_PATH}/core/.local" ]]; then
+        rsync -am "${ZUI_PATH}/core/.local/" "${HOME}/.local/" || \
             log_warn "Failed to install .local resources"
     fi
     
     # Install icons
-    if [[ -d "${ZUI_PATH}/common/.icons" ]]; then
-        sudo rsync -am "${ZUI_PATH}/common/.icons/" "${HOME}/.icons/" || \
+    if [[ -d "${ZUI_PATH}/core/.icons" ]]; then
+        sudo rsync -am "${ZUI_PATH}/core/.icons/" "${HOME}/.icons/" || \
             log_warn "Failed to install icons"
     fi
     

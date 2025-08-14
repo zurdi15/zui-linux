@@ -224,12 +224,12 @@ zui.sh install-theme -t haxor
 ## 🛠️ Customization
 
 ### Configuration Files
-- **System Config**: `~/.zui/common/system/config.yml`
+- **System Config**: `~/.zui/core/system/config.yml`
 - **Shell Config**: `~/.zui/shell/` 
 - **Theme Configs**: `~/.config/` (bspwm, polybar, rofi, etc.)
 
 ### Multi-Monitor Setup
-Edit `~/.zui/common/system/config.yml`:
+Edit `~/.zui/core/system/config.yml`:
 
 ```yaml
 monitors:

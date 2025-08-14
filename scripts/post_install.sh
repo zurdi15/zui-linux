@@ -84,14 +84,14 @@ set_permissions() {
     log_info "Setting executable permissions..."
     
     # Make polybar launch script executable
-    if [[ -f "${ZUI_PATH}/common/polybar/launch.sh" ]]; then
-        chmod +x "${ZUI_PATH}/common/polybar/launch.sh" || \
+    if [[ -f "${ZUI_PATH}/core/polybar/launch.sh" ]]; then
+        chmod +x "${ZUI_PATH}/core/polybar/launch.sh" || \
             log_warn "Failed to set permissions for polybar launch script"
     fi
     
     # Make system module scripts executable
-    if [[ -d "${ZUI_PATH}/common/system/modules" ]]; then
-        find "${ZUI_PATH}/common/system/modules" -name "*.sh" -exec chmod +x {} \; || \
+    if [[ -d "${ZUI_PATH}/core/system/modules" ]]; then
+        find "${ZUI_PATH}/core/system/modules" -name "*.sh" -exec chmod +x {} \; || \
             log_warn "Failed to set permissions for system modules"
     fi
     

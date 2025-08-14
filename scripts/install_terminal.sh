@@ -84,9 +84,9 @@ install_shell_configs() {
 	mkdir -p "${ZUI_PATH}/shell"
 
 	# Copy shell configuration files if they exist
-	if [[ -d "${BASE_PATH}/common/shell" ]]; then
+	if [[ -d "${BASE_PATH}/core/shell" ]]; then
         shopt -s dotglob  # Include dotfiles
-        cp "${BASE_PATH}/common/shell/"* "${ZUI_PATH}/shell/" 2>/dev/null || true
+        cp "${BASE_PATH}/core/shell/"* "${ZUI_PATH}/shell/" 2>/dev/null || true
         shopt -u dotglob  # Reset dotglob
     fi
 
@@ -121,8 +121,8 @@ install_shell_configs() {
 	fi
 
 	# Copy vim configuration
-	if [[ -d "${BASE_PATH}/common/.vim" ]]; then
-		cp -r "${BASE_PATH}/common/.vim" "${HOME}/.vim" || log_warn "Failed to copy vim config"
+	if [[ -d "${BASE_PATH}/core/.vim" ]]; then
+		cp -r "${BASE_PATH}/core/.vim" "${HOME}/.vim" || log_warn "Failed to copy vim config"
 	fi
 
 	log_success "Shell configurations installed"

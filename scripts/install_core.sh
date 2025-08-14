@@ -1,6 +1,6 @@
 #!/bin/bash
 # ZUI Core Installation Script
-# Sets up the core ZUI directory structure and common configurations
+# Sets up the ZUI directory structure and core components
 
 set -euo pipefail
 
@@ -76,7 +76,6 @@ run_with_progress() {
     return $?
 }
 
-# Create ZUI directory structure
 create_zui_structure() {
     log_info "Creating ZUI folder structure"
 
@@ -84,7 +83,7 @@ create_zui_structure() {
         log_error "Failed to create ZUI directory structure"
         exit 1
     fi
-    if ! run_with_progress "- Creating common directory" mkdir -p "${ZUI_PATH}/common"; then
+    if ! run_with_progress "- Creating core directory" mkdir -p "${ZUI_PATH}/core"; then
         log_error "Failed to create ZUI directory structure"
         exit 1
     fi
@@ -103,27 +102,21 @@ create_zui_structure() {
     echo ""
 }
 
-# Copy common configurations
-install_common_configs() {
-    log_info "Installing common configurations"
+install_core_components() {
+    log_info "Installing ZUI core components"
     # Check if config exists to preserve user settings
-    if [[ -f "${ZUI_PATH}/common/system/config.yml" ]]; then
-        if ! run_with_progress "- Preserving existing system configuration" rsync -am --exclude='*config.yml' "${BASE_PATH}/common/" "${ZUI_PATH}/common/"; then
-            log_error "Failed to install common configurations"
+    if [[ -f "${ZUI_PATH}/core/system/config.yml" ]]; then
+        if ! run_with_progress "- Installing core components preserving existing configuration" rsync -am --exclude='*config.yml' "${BASE_PATH}/core/" "${ZUI_PATH}/core/"; then
+            log_error "Failed to install core components"
             exit 1
         fi
     else
-        if ! run_with_progress "- Installing common configurations" rsync -am "${BASE_PATH}/common/" "${ZUI_PATH}/common/"; then
-            log_error "Failed to install common configurations"
+        if ! run_with_progress "- Installing core components" rsync -am "${BASE_PATH}/core/" "${ZUI_PATH}/core/"; then
+            log_error "Failed to install core components"
             exit 1
         fi
     fi
-    echo ""
-}
 
-# Configure system permissions
-configure_permissions() {
-    log_info "Configuring system permissions"
     # Add user to video group for backlight control
     if ! run_with_progress "- Adding user to video group for backlight control" sudo usermod -a -G video "${USER}"; then
         log_warn "Failed to add user to video group"
@@ -139,17 +132,6 @@ configure_permissions() {
             log_warn "Failed to configure Intel backlight rules"
         fi
     fi
-    
-    # Configure StreamDeck rules if present
-    # if [[ -f "${BASE_PATH}/redist/root/10-streamdeck.rules" ]]; then
-    #     if ! run_with_progress "Configuring StreamDeck rules" sudo cp "${BASE_PATH}/redist/root/10-streamdeck.rules" /etc/udev/rules.d/; then
-    #         log_warn "Failed to configure StreamDeck rules"
-    #     else
-    #         if ! run_with_progress "Reloading udev rules" sudo udevadm control --reload-rules; then
-    #             log_warn "Failed to reload udev rules"
-    #         fi
-    #     fi
-    # fi
     echo ""
 }
 
@@ -192,8 +174,7 @@ main() {
     mkdir -p "${TMP_PATH}"
 
     create_zui_structure
-    install_common_configs
-    configure_permissions
+    install_core_components
     configure_network_triggers
 
     echo ""
