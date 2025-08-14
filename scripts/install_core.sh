@@ -128,17 +128,20 @@ install_core_components() {
 
     # Add user to video group for backlight control
     if ! run_with_progress "- Adding user to video group for backlight control" sudo usermod -a -G video "${USER}"; then
-        log_warn "Failed to add user to video group"
+        log_error "Failed to add user to video group"
+        exit 1
     fi
     
     # Configure backlight rules based on hardware
     if lspci | grep -qi 'amd'; then
         if ! run_with_progress "- Configuring AMD backlight rules" sudo cp "${BASE_PATH}/core/system/modules/backlight/amd-backlight.rules" /etc/udev/rules.d/70-backlight.rules; then
-            log_warn "Failed to configure AMD backlight rules"
+            log_error "Failed to configure AMD backlight rules"
+            exit 1
         fi
     elif lspci | grep -qi 'intel'; then
         if ! run_with_progress "- Configuring Intel backlight rules" sudo cp "${BASE_PATH}/core/system/modules/backlight/intel-backlight.rules" /etc/udev/rules.d/70-backlight.rules; then
-            log_warn "Failed to configure Intel backlight rules"
+            log_error "Failed to configure Intel backlight rules"
+            exit 1
         fi
     fi
     echo ""
@@ -155,19 +158,19 @@ configure_network_triggers() {
     
     # Install network triggers
     if ! run_with_progress "- Installing network up trigger" sudo ln -snf "${TMP_PATH}/trigger-check-network" /etc/network/if-up.d/trigger-check-network; then
-        log_warn "Failed to install network up trigger"
+        log_error "Failed to install network up trigger"
     fi
 
     if ! run_with_progress "- Installing network down trigger" sudo ln -snf "${TMP_PATH}/trigger-check-network" /etc/network/if-down.d/trigger-check-network; then
-        log_warn "Failed to install network down trigger"
+        log_error "Failed to install network down trigger"
     fi
 
     if ! run_with_progress "- Installing network post-down trigger" sudo ln -snf "${TMP_PATH}/trigger-check-network" /etc/network/if-post-down.d/trigger-check-network; then
-        log_warn "Failed to install network post-down trigger"
+        log_error "Failed to install network post-down trigger"
     fi
 
     if ! run_with_progress "- Installing network pre-up trigger" sudo ln -snf "${TMP_PATH}/trigger-check-network" /etc/network/if-pre-up.d/trigger-check-network; then
-        log_warn "Failed to install network pre-up trigger"
+        log_error "Failed to install network pre-up trigger"
     fi
     echo ""
 }
