@@ -215,6 +215,7 @@ install_picom() {
     if command -v picom &> /dev/null; then
         log_info "Picom already installed, skipping..."
         track_software "picom (Compositor) [already installed]"
+        echo ""
         return 0
     fi
 
@@ -246,6 +247,7 @@ install_polybar() {
     if command -v polybar &> /dev/null; then
         log_info "Polybar already installed, skipping..."
         track_software "polybar (Status Bar) [already installed]"
+        echo ""
         return 0
     fi
 
@@ -336,6 +338,7 @@ install_dunst() {
     if command -v dunst &> /dev/null; then
         log_info "Dunst already installed, skipping..."
         track_software "dunst (Notification Daemon) [already installed]"
+        echo ""
         return 0
     fi
 
