@@ -113,8 +113,6 @@ authenticate_sudo() {
         log_error "Failed to authenticate sudo access"
         exit 1
     fi
-
-    echo ""
 }
 
 # Check distribution
@@ -169,6 +167,7 @@ install_system_packages() {
     fi
     
     track_software "System packages (build tools, development libraries)"
+    echo ""
 }
 
 # Install window manager components
@@ -208,6 +207,7 @@ install_window_manager() {
         fi
         track_software "sxhkd (Simple X HotKey Daemon) [from source]"
     fi
+    echo ""
 }
 
 # Install compositor
@@ -238,6 +238,7 @@ install_picom() {
     fi
     
     track_software "picom (X11 Compositor)"
+    echo ""
 }
 
 # Install polybar
@@ -268,6 +269,7 @@ install_polybar() {
     fi
     
     track_software "polybar (Status Bar)"
+    echo ""
 }
 
 # Install audio components
@@ -295,6 +297,7 @@ install_audio_tools() {
             log_warn "Failed to install Spotify via snap"
         fi
     fi
+    echo ""
 }
 
 # Install application launcher and utilities
@@ -325,6 +328,7 @@ install_utilities() {
             log_warn "Failed to clone or install i3lock-color"
         fi
     fi
+    echo ""
 }
 
 # Install notification daemon
@@ -350,6 +354,7 @@ install_dunst() {
     fi
     
     track_software "dunst (Notification Daemon)"
+    echo ""
 }
 
 # Install StreamDeck support (optional)
@@ -361,17 +366,16 @@ install_streamdeck() {
     else
         log_warn "Failed to install StreamDeck UI"
     fi
-    
-    log_success "StreamDeck support installed"
 }
 
 # Cleanup
 cleanup() {
     if run_with_progress "Cleaning up package cache" sudo apt autoremove -y; then
-        log_success "Cleanup completed"
+        :
     else
         log_warn "Failed to autoremove packages"
     fi
+    echo ""
 }
 
 # Generate installation summary
