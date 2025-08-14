@@ -210,9 +210,9 @@ install_theme_resources() {
     fi
     
     # Install local resources
-    if [[ -d "${ZUI_PATH}/current_theme/.local" ]]; then
-        rsync -am "${ZUI_PATH}/current_theme/.local/" "${HOME}/.local/" || \
-            log_warn "Failed to install local resources"
+    if [[ -d "${ZUI_PATH}/common/.local" ]]; then
+        rsync -am "${ZUI_PATH}/common/.local/" "${HOME}/.local/" || \
+            log_warn "Failed to install .local resources"
     fi
     
     # Install icons

@@ -122,7 +122,6 @@ confirm_uninstall() {
     echo "The following will be removed:"
     echo "  - ZUI directory: ${ZUI_PATH}"
     echo "  - UI configuration symlinks in: ${CONFIG_PATH} (bspwm, polybar, etc.)"
-    echo "  - ZUI utilities in: ${HOME}/.local/bin"
     echo ""
     echo "The following will be preserved:"
     echo "  - Terminal configurations (.zshrc, .p10k.zsh)"
@@ -260,19 +259,6 @@ remove_home_symlinks() {
     done
     
     log_success "Home directory symlinks processed (terminal config preserved)"
-}
-
-# Remove ZUI utilities
-remove_zui_utilities() {
-    log_info "Removing ZUI utilities..."
-
-    if [[ -d "${HOME}/.local/bin" ]]; then
-        find "${HOME}/.local/bin" -name "zui-*" -delete 2>/dev/null || \
-            log_warn "Some ZUI utilities could not be removed"
-        log_success "ZUI utilities removed"
-    else
-        log_info "No ZUI utilities directory found"
-    fi
 }
 
 # Remove system rules and triggers
@@ -536,7 +522,6 @@ generate_summary() {
     echo "Removed:"
     echo "  ✓ ZUI directory: ${ZUI_PATH}"
     echo "  ✓ Configuration symlinks"
-    echo "  ✓ ZUI utilities"
     echo "  ✓ System rules and triggers"
     echo "  ✓ ZUI-specific plugins"
     echo "  ✓ Manual UI installations (i3lock-color)"
@@ -578,7 +563,6 @@ main() {
     check_backups
     remove_config_symlinks
     remove_home_symlinks
-    remove_zui_utilities
     remove_system_rules
     remove_zsh_plugins
     remove_desktop_entry

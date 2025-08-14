@@ -124,7 +124,6 @@ main() {
 
     create_zui_structure
     install_common_configs
-    # install_zui_utilities
     configure_permissions
     configure_network_triggers
     

@@ -58,11 +58,6 @@ validate_installation() {
             ((errors++))
         fi
     done
-    
-    # Check utilities
-    if [[ ! -x "${HOME}/.local/bin/zui-theme" ]]; then
-        log_warn "ZUI theme utility not found or not executable"
-    fi
 
     if [[ ${errors} -eq 0 ]]; then
         log_success "Installation validation passed"
@@ -87,12 +82,6 @@ update_path() {
 # Set executable permissions
 set_permissions() {
     log_info "Setting executable permissions..."
-    
-    # Make ZUI utilities executable
-    if [[ -d "${HOME}/.local/bin" ]]; then
-        find "${HOME}/.local/bin" -name "zui-*" -exec chmod +x {} \; || \
-            log_warn "Failed to set permissions for ZUI utilities"
-    fi
     
     # Make polybar launch script executable
     if [[ -f "${ZUI_PATH}/common/polybar/launch.sh" ]]; then
@@ -170,11 +159,6 @@ generate_summary() {
     echo "  Super + L            - Lock screen"
     echo "  Super + N            - Network menu"
     echo "  Super + (num)        - Switch to workspace (num)"
-    echo ""
-    echo "Utilities:"
-    echo "  zui-theme           - Theme management"
-    echo "  zui-wallpaper       - Wallpaper management"
-    echo "  zui-reload          - Reload configuration"
     echo ""
     log_info "Next Steps:"
     log_info "- 1. Log out and log back in"

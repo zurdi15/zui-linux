@@ -328,7 +328,7 @@ install_audio_tools() {
 
 # Install application launcher and utilities
 install_utilities() {
-    log_info "Installing essential utilities..."
+    log_info "Installing essential utilities"
     
     # Rofi
     if run_with_progress_interactive "Installing rofi (Application Launcher)" sudo apt install -y rofi; then
