@@ -168,7 +168,7 @@ install_system_packages() {
         exit 1
     fi
     
-    track_software "System packages (build tools, development libraries)"
+    track_software "System packages (build tools, development libraries). Check the full packages list here: https://github.com/zurdi15/zui-linux/blob/a0483f822d753f2c6d02c6d4dc22c8e73933fb8e/scripts/install_deps.sh#L151"
 }
 
 # Install window manager components
