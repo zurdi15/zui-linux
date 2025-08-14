@@ -133,11 +133,11 @@ install_core_components() {
     
     # Configure backlight rules based on hardware
     if lspci | grep -qi 'amd'; then
-        if ! run_with_progress "- Configuring AMD backlight rules" sudo cp "${BASE_PATH}/redist/root/amd-backlight.rules" /etc/udev/rules.d/70-backlight.rules; then
+        if ! run_with_progress "- Configuring AMD backlight rules" sudo cp "${BASE_PATH}/core/system/modules/backlight/amd-backlight.rules" /etc/udev/rules.d/70-backlight.rules; then
             log_warn "Failed to configure AMD backlight rules"
         fi
     elif lspci | grep -qi 'intel'; then
-        if ! run_with_progress "- Configuring Intel backlight rules" sudo cp "${BASE_PATH}/redist/root/intel-backlight.rules" /etc/udev/rules.d/70-backlight.rules; then
+        if ! run_with_progress "- Configuring Intel backlight rules" sudo cp "${BASE_PATH}/core/system/modules/backlight/intel-backlight.rules" /etc/udev/rules.d/70-backlight.rules; then
             log_warn "Failed to configure Intel backlight rules"
         fi
     fi
@@ -148,7 +148,7 @@ install_core_components() {
 configure_network_triggers() {
     log_info "Configuring network triggers"
     # Create temporary trigger file with user substitution
-    if ! run_with_progress "- Creating network trigger configuration" sh -c "cp '${BASE_PATH}/redist/root/trigger-check-network' '${TMP_PATH}/trigger-check-network' && sed -i 's/<user>/${USER}/g' '${TMP_PATH}/trigger-check-network'"; then
+    if ! run_with_progress "- Creating network trigger configuration" sh -c "cp '${BASE_PATH}/core/system/modules/network/trigger-check-network' '${TMP_PATH}/trigger-check-network' && sed -i 's/<user>/${USER}/g' '${TMP_PATH}/trigger-check-network'"; then
         log_error "Failed to create network trigger configuration"
         return 1
     fi
