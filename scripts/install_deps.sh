@@ -108,15 +108,12 @@ check_not_root() {
 
 # Ensure sudo credentials are cached
 authenticate_sudo() {
-    log_info "Authenticating sudo access..."
-    
     # Test sudo access and cache credentials
     if ! sudo -v; then
         log_error "Failed to authenticate sudo access"
         exit 1
     fi
-    
-    log_success "Sudo authentication successful"
+
     echo ""
 }
 
@@ -139,19 +136,19 @@ check_snap() {
 
 # Install system packages
 install_system_packages() {
-    log_info "Preparing system for ZUI installation..."
+    log_info "Preparing system for ZUI installation"
     
-    if ! run_with_progress_interactive "Updating package repositories" sudo apt update; then
+    if ! run_with_progress "- Updating package repositories" sudo apt update; then
         log_error "Failed to update repositories"
         exit 1
     fi
     
-    if ! run_with_progress_interactive "Upgrading system packages" sudo apt dist-upgrade -y; then
+    if ! run_with_progress "- Upgrading system packages" sudo apt dist-upgrade -y; then
         log_error "Failed to upgrade system"
         exit 1
     fi
 
-    if ! run_with_progress_interactive "Installing build dependencies and core packages" sudo apt install -y \
+    if ! run_with_progress "- Installing build dependencies and core packages" sudo apt install -y \
         snap build-essential libxcb-ewmh-dev libxcb-icccm4-dev libxcb-keysyms1-dev \
         libxcb-xtest0-dev cmake cmake-data pkg-config python3-sphinx libcairo2-dev \
         libxcb-util0-dev libxcb-randr0-dev libxcb-composite0-dev python3-xcbgen xcb-proto \
@@ -177,36 +174,36 @@ install_system_packages() {
 
 # Install window manager components
 install_window_manager() {
-    log_info "Installing window manager components..."
+    log_info "Installing window manager components"
     
     # Try package manager first, fallback to source
-    if run_with_progress_interactive "Installing bspwm and sxhkd from package manager" sudo apt install -y bspwm sxhkd; then
+    if run_with_progress "- Installing bspwm and sxhkd from package manager" sudo apt install -y bspwm sxhkd; then
         track_software "bspwm (Binary Space Partitioning Window Manager)"
         track_software "sxhkd (Simple X HotKey Daemon)"
     else
         log_info "Package manager installation failed, building from source..."
         
         if [[ ! -d "${TMP_PATH}/bspwm" ]]; then
-            if ! run_with_progress "Cloning bspwm repository" git clone https://github.com/baskerville/bspwm.git "${TMP_PATH}/bspwm"; then
+            if ! run_with_progress "- Cloning bspwm repository" git clone https://github.com/baskerville/bspwm.git "${TMP_PATH}/bspwm"; then
                 log_error "Failed to clone bspwm"
                 exit 1
             fi
         fi
         
-        if ! run_with_progress_interactive "Building and installing bspwm" bash -c "cd '${TMP_PATH}/bspwm' && make >> '${LOG_FILE}' 2>&1 && sudo make install >> '${LOG_FILE}' 2>&1"; then
+        if ! run_with_progress "- Building and installing bspwm" bash -c "cd '${TMP_PATH}/bspwm' && make >> '${LOG_FILE}' 2>&1 && sudo make install >> '${LOG_FILE}' 2>&1"; then
             log_error "Failed to build bspwm"
             exit 1
         fi
         track_software "bspwm (Binary Space Partitioning Window Manager) [from source]"
         
         if [[ ! -d "${TMP_PATH}/sxhkd" ]]; then
-            if ! run_with_progress "Cloning sxhkd repository" git clone https://github.com/baskerville/sxhkd.git "${TMP_PATH}/sxhkd"; then
+            if ! run_with_progress "- Cloning sxhkd repository" git clone https://github.com/baskerville/sxhkd.git "${TMP_PATH}/sxhkd"; then
                 log_error "Failed to clone sxhkd"
                 exit 1
             fi
         fi
         
-        if ! run_with_progress_interactive "Building and installing sxhkd" bash -c "cd '${TMP_PATH}/sxhkd' && make >> '${LOG_FILE}' 2>&1 && sudo make install >> '${LOG_FILE}' 2>&1"; then
+        if ! run_with_progress "- Building and installing sxhkd" bash -c "cd '${TMP_PATH}/sxhkd' && make >> '${LOG_FILE}' 2>&1 && sudo make install >> '${LOG_FILE}' 2>&1"; then
             log_error "Failed to build sxhkd"
             exit 1
         fi
@@ -224,31 +221,31 @@ install_picom() {
         return 0
     fi
 
-    log_info "Installing picom compositor..."
+    log_info "Installing picom compositor"
     
     if [[ ! -d "${TMP_PATH}/picom" ]]; then
-        if ! run_with_progress "Cloning picom repository" git clone https://github.com/ibhagwan/picom.git "${TMP_PATH}/picom"; then
+        if ! run_with_progress "- Cloning picom repository" git clone https://github.com/ibhagwan/picom.git "${TMP_PATH}/picom"; then
             log_error "Failed to clone picom"
             exit 1
         fi
     fi
     
-    if ! run_with_progress "Initializing picom submodules" bash -c "cd '${TMP_PATH}/picom' && git submodule update --init --recursive >> '${LOG_FILE}' 2>&1"; then
+    if ! run_with_progress "- Initializing picom submodules" bash -c "cd '${TMP_PATH}/picom' && git submodule update --init --recursive >> '${LOG_FILE}' 2>&1"; then
         log_error "Failed to initialize picom submodules"
         exit 1
     fi
     
-    if ! run_with_progress "Building picom with meson" bash -c "cd '${TMP_PATH}/picom' && meson --buildtype=release . build >> '${LOG_FILE}' 2>&1"; then
+    if ! run_with_progress "- Building picom with meson" bash -c "cd '${TMP_PATH}/picom' && meson --buildtype=release . build >> '${LOG_FILE}' 2>&1"; then
         log_error "Failed to configure picom build"
         exit 1
     fi
     
-    if ! run_with_progress "Compiling picom" bash -c "cd '${TMP_PATH}/picom' && ninja -C build >> '${LOG_FILE}' 2>&1"; then
+    if ! run_with_progress "- Compiling picom" bash -c "cd '${TMP_PATH}/picom' && ninja -C build >> '${LOG_FILE}' 2>&1"; then
         log_error "Failed to compile picom"
         exit 1
     fi
     
-    if ! run_with_progress_interactive "Installing picom" bash -c "cd '${TMP_PATH}/picom' && sudo ninja -C build install >> '${LOG_FILE}' 2>&1"; then
+    if ! run_with_progress "- Installing picom" bash -c "cd '${TMP_PATH}/picom' && sudo ninja -C build install >> '${LOG_FILE}' 2>&1"; then
         log_error "Failed to install picom"
         exit 1
     fi
@@ -265,26 +262,26 @@ install_polybar() {
         return 0
     fi
 
-    log_info "Installing polybar..."
+    log_info "Installing polybar"
     
     if [[ ! -d "${TMP_PATH}/polybar" ]]; then
-        if ! run_with_progress "Cloning polybar repository" git clone --recursive https://github.com/polybar/polybar "${TMP_PATH}/polybar"; then
+        if ! run_with_progress "- Cloning polybar repository" git clone --recursive https://github.com/polybar/polybar "${TMP_PATH}/polybar"; then
             log_error "Failed to clone polybar"
             exit 1
         fi
     fi
     
-    if ! run_with_progress "Configuring polybar build" bash -c "cd '${TMP_PATH}/polybar' && mkdir -p build && cd build && cmake .. >> '${LOG_FILE}' 2>&1"; then
+    if ! run_with_progress "- Configuring polybar build" bash -c "cd '${TMP_PATH}/polybar' && mkdir -p build && cd build && cmake .. >> '${LOG_FILE}' 2>&1"; then
         log_error "Failed to configure polybar"
         exit 1
     fi
     
-    if ! run_with_progress "Compiling polybar" bash -c "cd '${TMP_PATH}/polybar/build' && make -j\$(nproc) >> '${LOG_FILE}' 2>&1"; then
+    if ! run_with_progress "- Compiling polybar" bash -c "cd '${TMP_PATH}/polybar/build' && make -j\$(nproc) >> '${LOG_FILE}' 2>&1"; then
         log_error "Failed to compile polybar"
         exit 1
     fi
     
-    if ! run_with_progress_interactive "Installing polybar" bash -c "cd '${TMP_PATH}/polybar/build' && sudo make install >> '${LOG_FILE}' 2>&1"; then
+    if ! run_with_progress "- Installing polybar" bash -c "cd '${TMP_PATH}/polybar/build' && sudo make install >> '${LOG_FILE}' 2>&1"; then
         log_error "Failed to install polybar"
         exit 1
     fi
@@ -295,11 +292,11 @@ install_polybar() {
 
 # Install audio components
 install_audio_tools() {
-    log_info "Installing audio and media tools..."
+    log_info "Installing audio and media tools"
 
     if [[ ! -d "${TMP_PATH}/zscroll" ]]; then
-        if run_with_progress "Cloning zscroll repository" git clone https://github.com/noctuid/zscroll "${TMP_PATH}/zscroll"; then
-            if run_with_progress_interactive "Installing zscroll" bash -c "cd '${TMP_PATH}/zscroll' && sudo python3 setup.py install && sudo chown -R ${USER}:${USER} '${TMP_PATH}/zscroll' >> '${LOG_FILE}' 2>&1"; then
+        if run_with_progress "- Cloning zscroll repository" git clone https://github.com/noctuid/zscroll "${TMP_PATH}/zscroll"; then
+            if run_with_progress "- Installing zscroll" bash -c "cd '${TMP_PATH}/zscroll' && sudo python3 setup.py install && sudo chown -R ${USER}:${USER} '${TMP_PATH}/zscroll' >> '${LOG_FILE}' 2>&1"; then
                 track_software "zscroll (Text Scrolling Tool)"
             else
                 log_warn "Failed to install zscroll"
@@ -309,14 +306,14 @@ install_audio_tools() {
         fi
     fi
     
-    if run_with_progress_interactive "Installing playerctl" sudo apt install -y playerctl; then
+    if run_with_progress "- Installing playerctl" sudo apt install -y playerctl; then
         track_software "playerctl (Media Player Controller)"
     else
         log_warn "Failed to install playerctl"
     fi
     
     if check_snap; then
-        if run_with_progress_interactive "Installing Spotify via snap" sudo snap install spotify; then
+        if run_with_progress "- Installing Spotify via snap" sudo snap install spotify; then
             track_software "Spotify (Music Streaming)"
         else
             log_warn "Failed to install Spotify via snap"
@@ -331,7 +328,7 @@ install_utilities() {
     log_info "Installing essential utilities"
     
     # Rofi
-    if run_with_progress_interactive "Installing rofi (Application Launcher)" sudo apt install -y rofi; then
+    if run_with_progress "- Installing rofi (Application Launcher)" sudo apt install -y rofi; then
         track_software "rofi (Application Launcher)"
     else
         log_error "Failed to install rofi"
@@ -339,7 +336,7 @@ install_utilities() {
     fi
     
     # Feh for wallpapers
-    if run_with_progress_interactive "Installing feh (Image Viewer/Wallpaper Manager)" sudo apt install -y feh; then
+    if run_with_progress "- Installing feh (Image Viewer/Wallpaper Manager)" sudo apt install -y feh; then
         track_software "feh (Image Viewer & Wallpaper Manager)"
     else
         log_error "Failed to install feh"
@@ -348,8 +345,8 @@ install_utilities() {
     
     # Install i3lock-color
     if [[ ! -d "${TMP_PATH}/i3lock-color" ]]; then
-        if run_with_progress "Cloning i3lock-color repository" git clone https://github.com/Raymo111/i3lock-color.git "${TMP_PATH}/i3lock-color"; then
-            if run_with_progress_interactive "Installing i3lock-color (Enhanced Screen Locker)" bash -c "cd '${TMP_PATH}/i3lock-color' && ./install-i3lock-color.sh >> '${LOG_FILE}' 2>&1"; then
+        if run_with_progress "- Cloning i3lock-color repository" git clone https://github.com/Raymo111/i3lock-color.git "${TMP_PATH}/i3lock-color"; then
+            if run_with_progress "Installing i3lock-color (Enhanced Screen Locker)" bash -c "cd '${TMP_PATH}/i3lock-color' && ./install-i3lock-color.sh >> '${LOG_FILE}' 2>&1"; then
                 track_software "i3lock-color (Enhanced Screen Locker)"
             else
                 log_warn "Failed to install i3lock-color"
@@ -370,16 +367,16 @@ install_dunst() {
         return 0
     fi
 
-    log_info "Installing dunst notification daemon..."
+    log_info "Installing dunst notification daemon"
     
     if [[ ! -d "${TMP_PATH}/dunst" ]]; then
-        if ! run_with_progress "Cloning dunst repository" git clone https://github.com/dunst-project/dunst.git "${TMP_PATH}/dunst"; then
+        if ! run_with_progress "- Cloning dunst repository" git clone https://github.com/dunst-project/dunst.git "${TMP_PATH}/dunst"; then
             log_error "Failed to clone dunst"
             exit 1
         fi
     fi
     
-    if ! run_with_progress_interactive "Building and installing dunst" bash -c "cd '${TMP_PATH}/dunst' && make >> '${LOG_FILE}' 2>&1 && sudo make install >> '${LOG_FILE}' 2>&1"; then
+    if ! run_with_progress "- Building and installing dunst" bash -c "cd '${TMP_PATH}/dunst' && make >> '${LOG_FILE}' 2>&1 && sudo make install >> '${LOG_FILE}' 2>&1"; then
         log_error "Failed to install dunst"
         exit 1
     fi
@@ -403,7 +400,7 @@ install_streamdeck() {
 
 # Cleanup
 cleanup() {
-    if run_with_progress_interactive "Cleaning up package cache" sudo apt autoremove -y; then
+    if run_with_progress "Cleaning up package cache" sudo apt autoremove -y; then
         log_success "Cleanup completed"
     else
         log_warn "Failed to autoremove packages"
