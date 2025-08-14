@@ -202,16 +202,9 @@ install_terminal_tools() {
 		exit 1
 	fi
 
-	if ! run_with_progress "- Installing neovim (Next-generation text editor)" sudo apt install -y neovim; then
+	if ! run_with_progress "- Installing neovim and plugins" bash -c "sudo apt install -y neovim && nvim +PlugInstall +qall 2>/dev/null || true"; then
 		log_error "Failed to install neovim"
 		exit 1
-	fi
-	if command -v nvim &> /dev/null; then
-		if ! run_with_progress "- Installing neovim plugins" nvim +PlugInstall +qall; then
-			log_warn "Failed to install neovim plugins"
-		fi
-	else
-		log_warn "Neovim not found, skipping plugin installation"
 	fi
 
 	# Install fzf (fuzzy finder)
