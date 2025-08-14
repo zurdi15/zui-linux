@@ -261,19 +261,6 @@ run_theme_install() {
     log_success "Theme-specific installation completed"
 }
 
-# Install neovim plugins
-install_neovim_plugins() {
-    log_info "Installing neovim plugins..."
-    
-    if command -v nvim &> /dev/null; then
-        nvim +PlugInstall +qall || log_warn "Failed to install neovim plugins"
-    else
-        log_warn "Neovim not found, skipping plugin installation"
-    fi
-    
-    log_success "Neovim plugins installation completed"
-}
-
 reload_bspwm() {
     if [[ -f "${HOME}/.config/bspwm/bspwmrc" ]]; then
         bash "${HOME}/.config/bspwm/bspwmrc" >> "${LOG_FILE}" 2>&1

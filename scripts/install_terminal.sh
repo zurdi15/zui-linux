@@ -168,31 +168,16 @@ install_zsh_plugins() {
 		exit 1
 	fi
 
-	# Remove existing plugins to ensure clean installation
-	local plugins=(
-		"zsh-syntax-highlighting"
-		"zsh-autosuggestions" 
-		"zsh-autocomplete"
-	)
-
-	for plugin in "${plugins[@]}"; do
-		if [[ -d "/usr/share/zsh/zsh-plugins/${plugin}" ]]; then
-			if ! run_with_progress "- Removing existing ${plugin}" sudo rm -rf "/usr/share/zsh/zsh-plugins/${plugin}"; then
-				log_warn "Failed to remove existing ${plugin}"
-			fi
-		fi
-	done
-
-	# Install plugins
-	if ! run_with_progress "- Installing zsh-syntax-highlighting" sudo git clone --quiet https://github.com/zsh-users/zsh-syntax-highlighting.git /usr/share/zsh/zsh-plugins/zsh-syntax-highlighting; then
+	# Install plugins (remove existing and clone in single command)
+	if ! run_with_progress "- Installing zsh-syntax-highlighting" bash -c "sudo rm -rf /usr/share/zsh/zsh-plugins/zsh-syntax-highlighting && sudo git clone --quiet https://github.com/zsh-users/zsh-syntax-highlighting.git /usr/share/zsh/zsh-plugins/zsh-syntax-highlighting"; then
 		log_warn "Failed to install zsh-syntax-highlighting"
 	fi
 
-	if ! run_with_progress "- Installing zsh-autosuggestions" sudo git clone --quiet https://github.com/zsh-users/zsh-autosuggestions /usr/share/zsh/zsh-plugins/zsh-autosuggestions; then
+	if ! run_with_progress "- Installing zsh-autosuggestions" bash -c "sudo rm -rf /usr/share/zsh/zsh-plugins/zsh-autosuggestions && sudo git clone --quiet https://github.com/zsh-users/zsh-autosuggestions /usr/share/zsh/zsh-plugins/zsh-autosuggestions"; then
 		log_warn "Failed to install zsh-autosuggestions"
 	fi
 
-	if ! run_with_progress "- Installing zsh-autocomplete" sudo git clone --quiet https://github.com/marlonrichert/zsh-autocomplete.git /usr/share/zsh/zsh-plugins/zsh-autocomplete; then
+	if ! run_with_progress "- Installing zsh-autocomplete" bash -c "sudo rm -rf /usr/share/zsh/zsh-plugins/zsh-autocomplete && sudo git clone --quiet https://github.com/marlonrichert/zsh-autocomplete.git /usr/share/zsh/zsh-plugins/zsh-autocomplete"; then
 		log_warn "Failed to install zsh-autocomplete"
 	fi
 	echo ""
@@ -221,20 +206,17 @@ install_terminal_tools() {
 		log_error "Failed to install neovim"
 		exit 1
 	fi
-
-	# Install fzf (fuzzy finder)
-	if [[ -d "${HOME}/.fzf" ]]; then
-		if ! run_with_progress "- Removing existing fzf installation" rm -rf "${HOME}/.fzf"; then
-			log_warn "Failed to remove existing fzf"
+	if command -v nvim &> /dev/null; then
+		if ! run_with_progress "- Installing neovim plugins" nvim +PlugInstall +qall; then
+			log_warn "Failed to install neovim plugins"
 		fi
+	else
+		log_warn "Neovim not found, skipping plugin installation"
 	fi
 
-	if ! run_with_progress "- Cloning fzf repository" git clone --quiet --depth 1 https://github.com/junegunn/fzf.git "${HOME}/.fzf"; then
-		log_warn "Failed to clone fzf"
-	else
-		if ! run_with_progress "- Installing fzf" bash -c "echo -e 'y\ny\ny\n' | '${HOME}/.fzf/install' >/dev/null"; then
-			log_warn "Failed to install fzf"
-		fi
+	# Install fzf (fuzzy finder)
+	if ! run_with_progress "- Installing fzf (fuzzy finder)" bash -c "rm -rf '${HOME}/.fzf' && git clone --quiet --depth 1 https://github.com/junegunn/fzf.git '${HOME}/.fzf' && echo -e 'y\ny\ny\n' | '${HOME}/.fzf/install' >/dev/null"; then
+		log_warn "Failed to install fzf"
 	fi
 	echo ""
 }
@@ -261,7 +243,6 @@ configure_prompt() {
 
 }
 
-# Set zsh as default shell
 set_default_shell() {
 	log_info "Setting zsh as default shell"
 
