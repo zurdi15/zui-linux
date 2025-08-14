@@ -56,18 +56,11 @@ run_with_progress_interactive() {
 
 # Check if user wants terminal configuration
 confirm_terminal_installation() {
-	log_info "ZUI can optionally configure your terminal with:"
-	log_info "- Zsh shell with enhanced plugins"
-	log_info "- Powerlevel10k theme"
-	log_info "- Modern CLI tools (lsd, bat, ranger, neovim)"
-	log_info "- Terminal configuration files (.zshrc, .p10k.zsh)"
-	echo ""
 	log_warn "Note: This will modify your shell configuration."
 	log_warn "If you already have a customized terminal setup, you may want to skip this."
 	echo ""
 
-	read -p "Install terminal configuration? [y/N]: " -n 1 -r
-	echo ""
+	read -p "Install terminal configuration? [y/N]: " -n 1
 	echo ""
 
 	if [[ ! ${REPLY} =~ ^[Yy]$ ]]; then
@@ -234,12 +227,12 @@ install_omz() {
 	fi
 
 	# Install for root
-	if [[ ! -d "/root/.oh-my-zsh" ]]; then
-		sudo sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended 2>/dev/null ||
-			log_warn "Failed to install root Oh My Zsh"
-	else
-		log_info "Oh My Zsh already exists for root"
-	fi
+	# if [[ ! -d "/root/.oh-my-zsh" ]]; then
+	# 	sudo sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended 2>/dev/null ||
+	# 		log_warn "Failed to install root Oh My Zsh"
+	# else
+	# 	log_info "Oh My Zsh already exists for root"
+	# fi
 
 	log_success "Oh My Zsh installed"
 }
@@ -257,12 +250,12 @@ install_powerlevel10k() {
 	fi
 
 	# Install for root
-	if [[ ! -d "/root/.oh-my-zsh/custom/themes/powerlevel10k" ]]; then
-		git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "/root/.oh-my-zsh/custom/themes/powerlevel10k" 2>/dev/null ||
-			log_warn "Failed to install root Powerlevel10k"
-	else
-		log_info "Powerlevel10k already exists for root"
-	fi
+	# if [[ ! -d "/root/.oh-my-zsh/custom/themes/powerlevel10k" ]]; then
+	# 	git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "/root/.oh-my-zsh/custom/themes/powerlevel10k" 2>/dev/null ||
+	# 		log_warn "Failed to install root Powerlevel10k"
+	# else
+	# 	log_info "Powerlevel10k already exists for root"
+	# fi
 
 	log_success "Powerlevel10k theme installed"
 }
@@ -287,42 +280,42 @@ set_default_shell() {
 	fi
 
 	# Change default shell for root
-	local root_shell
-	root_shell=$(sudo grep "^root:" /etc/passwd | cut -d: -f7)
-	if [[ ${root_shell} != *"zsh"* ]]; then
-		log_info "Changing default shell to zsh for root"
-		sudo usermod --shell /usr/bin/zsh root ||
-			log_warn "Failed to change root shell to zsh"
-	else
-		log_info "Root shell is already zsh"
-	fi
+	# local root_shell
+	# root_shell=$(sudo grep "^root:" /etc/passwd | cut -d: -f7)
+	# if [[ ${root_shell} != *"zsh"* ]]; then
+	# 	log_info "Changing default shell to zsh for root"
+	# 	sudo usermod --shell /usr/bin/zsh root ||
+	# 		log_warn "Failed to change root shell to zsh"
+	# else
+	# 	log_info "Root shell is already zsh"
+	# fi
 
 	log_success "Default shell configuration completed"
 }
 
 # Configure root environment
-configure_root_environment() {
-	log_info "Configuring root terminal environment..."
+# configure_root_environment() {
+# 	log_info "Configuring root terminal environment..."
 
-	# Create root symlinks for terminal configs
-	if [[ -f "${ZUI_PATH}/shell/.zshrc" ]]; then
-		sudo ln -sfn "${ZUI_PATH}/shell/.zshrc" /root/.zshrc ||
-			log_warn "Failed to create root .zshrc symlink"
-	fi
+# 	# Create root symlinks for terminal configs
+# 	if [[ -f "${ZUI_PATH}/shell/.zshrc" ]]; then
+# 		sudo ln -sfn "${ZUI_PATH}/shell/.zshrc" /root/.zshrc ||
+# 			log_warn "Failed to create root .zshrc symlink"
+# 	fi
 
-	if [[ -f "${ZUI_PATH}/shell/.p10k.zsh" ]]; then
-		sudo ln -sfn "${ZUI_PATH}/shell/.p10k.zsh" /root/.p10k.zsh ||
-			log_warn "Failed to create root .p10k.zsh symlink"
-	fi
+# 	if [[ -f "${ZUI_PATH}/shell/.p10k.zsh" ]]; then
+# 		sudo ln -sfn "${ZUI_PATH}/shell/.p10k.zsh" /root/.p10k.zsh ||
+# 			log_warn "Failed to create root .p10k.zsh symlink"
+# 	fi
 
-	# Copy root profile if it exists
-	if [[ -f "${BASE_PATH}/redist/root/.profile" ]]; then
-		sudo cp "${BASE_PATH}/redist/root/.profile" /root/ ||
-			log_warn "Failed to copy root profile"
-	fi
+# 	# Copy root profile if it exists
+# 	if [[ -f "${BASE_PATH}/redist/root/.profile" ]]; then
+# 		sudo cp "${BASE_PATH}/redist/root/.profile" /root/ ||
+# 			log_warn "Failed to copy root profile"
+# 	fi
 
-	log_success "Root terminal environment configured"
-}
+# 	log_success "Root terminal environment configured"
+# }
 
 # Main installation function
 main() {
