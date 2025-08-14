@@ -204,8 +204,8 @@ install_theme_resources() {
     fi
     
     # Install themes
-    if [[ -d "${ZUI_PATH}/current_theme/.themes" ]]; then
-        rsync -am "${ZUI_PATH}/current_theme/.themes/" "${HOME}/.themes/" || \
+    if [[ -d "${ZUI_PATH}/common/.themes" ]]; then
+        rsync -am "${ZUI_PATH}/common/.themes/" "${HOME}/.themes/" || \
             log_warn "Failed to install GTK themes"
     fi
     
