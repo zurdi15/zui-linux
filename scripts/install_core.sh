@@ -78,7 +78,25 @@ run_with_progress() {
 
 # Create ZUI directory structure
 create_zui_structure() {
-    if ! run_with_progress "Creating ZUI directory structure" mkdir -p "${ZUI_PATH}" "${ZUI_PATH}/themes" "${ZUI_PATH}/common" "${ZUI_PATH}/shell" "${ZUI_PATH}/backups" "${CONFIG_PATH}"; then
+    log_info "Createing ZUI folder structure"
+
+    if ! run_with_progress "- Creating themes directory" mkdir -p "${ZUI_PATH}/themes"; then
+        log_error "Failed to create ZUI directory structure"
+        exit 1
+    fi
+    if ! run_with_progress "- Creating common directory" mkdir -p "${ZUI_PATH}/common"; then
+        log_error "Failed to create ZUI directory structure"
+        exit 1
+    fi
+    if ! run_with_progress "- Creating shell directory" mkdir -p "${ZUI_PATH}/shell"; then
+        log_error "Failed to create ZUI directory structure"
+        exit 1
+    fi
+    if ! run_with_progress "- Creating backups directory" mkdir -p "${ZUI_PATH}/backups"; then
+        log_error "Failed to create ZUI directory structure"
+        exit 1
+    fi
+    if ! run_with_progress "- Creating config directory" mkdir -p "${CONFIG_PATH}"; then
         log_error "Failed to create ZUI directory structure"
         exit 1
     fi
@@ -86,60 +104,77 @@ create_zui_structure() {
 
 # Copy common configurations
 install_common_configs() {
-    log_info "Installing common configurations..."
-    
+    log_info "Installing common configurations"
     # Check if config exists to preserve user settings
     if [[ -f "${ZUI_PATH}/common/system/config.yml" ]]; then
-        log_info "Preserving existing system configuration"
-        rsync -am --exclude='*config.yml' "${BASE_PATH}/common/" "${ZUI_PATH}/common/"
+        if ! run_with_progress "- Preserving existing system configuration" rsync -am --exclude='*config.yml' "${BASE_PATH}/common/" "${ZUI_PATH}/common/"; then
+            log_error "Failed to install common configurations"
+            exit 1
+        fi
     else
-        rsync -am "${BASE_PATH}/common/" "${ZUI_PATH}/common/"
+        if ! run_with_progress "- Installing common configurations" rsync -am "${BASE_PATH}/common/" "${ZUI_PATH}/common/"; then
+            log_error "Failed to install common configurations"
+            exit 1
+        fi
     fi
 }
 
 # Configure system permissions
 configure_permissions() {
-    log_info "Configuring system permissions..."
-    
+    log_info "Configuring system permissions"
     # Add user to video group for backlight control
-    sudo usermod -a -G video "${USER}" || log_warn "Failed to add user to video group"
+    if ! run_with_progress "- Adding user to video group for backlight control" sudo usermod -a -G video "${USER}"; then
+        log_warn "Failed to add user to video group"
+    fi
     
     # Configure backlight rules based on hardware
     if lspci | grep -qi 'amd'; then
-        log_info "Detected AMD graphics, configuring AMD backlight rules"
-        sudo cp "${BASE_PATH}/redist/root/amd-backlight.rules" /etc/udev/rules.d/70-backlight.rules || \
+        if ! run_with_progress "- Configuring AMD backlight rules" sudo cp "${BASE_PATH}/redist/root/amd-backlight.rules" /etc/udev/rules.d/70-backlight.rules; then
             log_warn "Failed to configure AMD backlight rules"
+        fi
     elif lspci | grep -qi 'intel'; then
-        log_info "Detected Intel graphics, configuring Intel backlight rules"
-        sudo cp "${BASE_PATH}/redist/root/intel-backlight.rules" /etc/udev/rules.d/70-backlight.rules || \
+        if ! run_with_progress "- Configuring Intel backlight rules" sudo cp "${BASE_PATH}/redist/root/intel-backlight.rules" /etc/udev/rules.d/70-backlight.rules; then
             log_warn "Failed to configure Intel backlight rules"
+        fi
     fi
     
     # Configure StreamDeck rules if present
-    if [[ -f "${BASE_PATH}/redist/root/10-streamdeck.rules" ]]; then
-        sudo cp "${BASE_PATH}/redist/root/10-streamdeck.rules" /etc/udev/rules.d/ || \
-            log_warn "Failed to configure StreamDeck rules"
-        sudo udevadm control --reload-rules || log_warn "Failed to reload udev rules"
-    fi
+    # if [[ -f "${BASE_PATH}/redist/root/10-streamdeck.rules" ]]; then
+    #     if ! run_with_progress "Configuring StreamDeck rules" sudo cp "${BASE_PATH}/redist/root/10-streamdeck.rules" /etc/udev/rules.d/; then
+    #         log_warn "Failed to configure StreamDeck rules"
+    #     else
+    #         if ! run_with_progress "Reloading udev rules" sudo udevadm control --reload-rules; then
+    #             log_warn "Failed to reload udev rules"
+    #         fi
+    #     fi
+    # fi
 }
 
 # Configure network triggers
 configure_network_triggers() {
-    log_info "Configuring network interface triggers..."
-    
+    log_info "Configuring network triggers"
     # Create temporary trigger file with user substitution
-    cp "${BASE_PATH}/redist/root/trigger-check-network" "${TMP_PATH}/trigger-check-network"
-    sed -i "s/<user>/${USER}/g" "${TMP_PATH}/trigger-check-network"
+    if ! run_with_progress "- Creating network trigger configuration" sh -c "cp '${BASE_PATH}/redist/root/trigger-check-network' '${TMP_PATH}/trigger-check-network' && sed -i 's/<user>/${USER}/g' '${TMP_PATH}/trigger-check-network'"; then
+        log_error "Failed to create network trigger configuration"
+        return 1
+    fi
     
     # Install network triggers
-    sudo cp "${TMP_PATH}/trigger-check-network" /etc/network/if-up.d/ || \
+    if ! run_with_progress "- Installing network up trigger" sudo cp "${TMP_PATH}/trigger-check-network" /etc/network/if-up.d/; then
         log_warn "Failed to install network up trigger"
-    sudo cp "${TMP_PATH}/trigger-check-network" /etc/network/if-down.d/ || \
+    fi
+
+    if ! run_with_progress "- Installing network down trigger" sudo cp "${TMP_PATH}/trigger-check-network" /etc/network/if-down.d/; then
         log_warn "Failed to install network down trigger"
-    sudo cp "${TMP_PATH}/trigger-check-network" /etc/network/if-post-down.d/ || \
+    fi
+
+    if ! run_with_progress "- Installing network post-down trigger" sudo cp "${TMP_PATH}/trigger-check-network" /etc/network/if-post-down.d/; then
         log_warn "Failed to install network post-down trigger"
-    sudo cp "${TMP_PATH}/trigger-check-network" /etc/network/if-pre-up.d/ || \
+    fi
+
+    if ! run_with_progress "- Installing network pre-up trigger" sudo cp "${TMP_PATH}/trigger-check-network" /etc/network/if-pre-up.d/; then
         log_warn "Failed to install network pre-up trigger"
+    fi
 }
 
 # Main installation function
