@@ -1,7 +1,6 @@
 #!/bin/bash
 # ZUI Terminal Installation Script
 # Optional terminal configuration and tools installation
-# TODO: install oh my zsh / p10k
 
 set -euo pipefail
 
@@ -38,20 +37,42 @@ log_success() {
 	echo -e "${GREEN}[SUCCESS]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${GREEN}[SUCCESS]${NC} $1"
 }
 
-run_with_progress_interactive() {
+# Progress indicator
+show_progress() {
+    local pid=$1
+    local message="$2"
+    local spinner='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
+    local i=0
+    
+    echo -ne "${BLUE}[INFO]${NC} ${message} "
+    while kill -0 "${pid}" 2>/dev/null; do
+        printf "${spinner:$i:1}"
+        sleep 0.1
+        printf "\b"
+        i=$(( (i+1) % ${#spinner} ))
+    done
+    echo -e "${GREEN}✓${NC}"
+}
+
+# Silent command execution with progress
+run_with_progress() {
     local message="$1"
     shift
     
-    echo -ne "${BLUE}[INFO]${NC} $message "
-    
-    # Run command normally (allowing interactive prompts) but redirect output
-    if "$@" >> "${LOG_FILE}" 2>&1; then
-        echo -e "${GREEN}✓${NC}"
-        return 0
-    else
-        echo -e "${RED}✗${NC}"
-        return 1
+    # For sudo commands, ensure credentials are fresh
+    if [[ "$1" == "sudo" ]]; then
+        sudo -v 2>/dev/null || true
     fi
+    
+    # Run command in background and capture output
+    "$@" >> "${LOG_FILE}" 2>&1 &
+    local pid=$!
+    
+    show_progress "${pid}" "${message}"
+    
+    # Wait for completion and check exit code
+    wait "${pid}"
+    return $?
 }
 
 # Check if user wants terminal configuration
@@ -60,8 +81,8 @@ confirm_terminal_installation() {
 	log_warn "If you already have a customized terminal setup, you may want to skip this."
 	echo ""
 
-	read -p "Install terminal configuration? [y/N]: " -n 1
-	echo ""
+	read -p "Install terminal configuration? [y/N]: " -n 1 -r
+	echo -e "\n"
 
 	if [[ ! ${REPLY} =~ ^[Yy]$ ]]; then
 		log_info "Terminal installation skipped by user choice."
@@ -71,27 +92,25 @@ confirm_terminal_installation() {
 
 # Install shell configurations
 install_shell_configs() {
-	log_info "Installing shell configurations..."
+	log_info "Installing shell configurations"
 
 	# Create shell config directory in ZUI
 	mkdir -p "${ZUI_PATH}/shell"
 
 	# Copy shell configuration files if they exist
-	if [[ -d "${BASE_PATH}/core/shell" ]]; then
-        shopt -s dotglob  # Include dotfiles
-        cp "${BASE_PATH}/core/shell/"* "${ZUI_PATH}/shell/" 2>/dev/null || true
-        shopt -u dotglob  # Reset dotglob
-    fi
+	shopt -s dotglob  # Include dotfiles
+	cp "${BASE_PATH}/core/shell/*" "${ZUI_PATH}/shell/" 2>/dev/null || true
+	shopt -u dotglob  # Reset dotglob
 
 	# Backup existing configs if they exist
 	if [[ -f "${HOME}/.zshrc" && ! -L "${HOME}/.zshrc" ]]; then
-		log_info "Backing up existing .zshrc to .zshrc.backup"
-		cp "${HOME}/.zshrc" "${ZUI_PATH}/backup/shell/.zshrc.backup"
+		log_info "Backing up existing .zshrc to "${ZUI_PATH}/backup/shell/.zshrc"
+		cp "${HOME}/.zshrc" "${ZUI_PATH}/backup/shell/.zshrc"
 	fi
 
 	if [[ -f "${HOME}/.p10k.zsh" && ! -L "${HOME}/.p10k.zsh" ]]; then
-		log_info "Backing up existing .p10k.zsh to .p10k.zsh.backup"
-		cp "${HOME}/.p10k.zsh" "${ZUI_PATH}/backup/shell/.p10k.zsh.backup"
+		log_info "Backing up existing .p10k.zsh to "${ZUI_PATH}/backup/shell/.p10k.zsh"
+		cp "${HOME}/.p10k.zsh" "${ZUI_PATH}/backup/shell/.p10k.zsh"
 	fi
 
 	# Create symlinks to ZUI shell configs
@@ -238,7 +257,7 @@ install_omz() {
 }
 
 # Install Powerlevel10k theme
-install_powerlevel10k() {
+install_p10k() {
 	log_info "Installing Powerlevel10k theme..."
 
 	# Install for user
@@ -335,15 +354,14 @@ main() {
 	confirm_terminal_installation
 
 	install_omz
-	install_powerlevel10k
+	install_p10k
 	install_shell_configs
 	install_zsh_plugins
 	install_terminal_tools
 	set_default_shell
 	# configure_root_environment
 
-	log_success "ZUI terminal installation completed!"
-	log_info "Please log out and log back in to use the new shell configuration."
+	log_info "Please restart the shell to use the new configuration."
 }
 
 # Run main function if script is executed directly
