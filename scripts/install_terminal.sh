@@ -22,19 +22,19 @@ mkdir -p "${TMP_PATH}"
 
 # Logging functions
 log_info() {
-	echo -e "${BLUE}[INFO]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${BLUE}[INFO]${NC} $1"
+    echo -e "${BLUE}[INFO]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${BLUE}[INFO]${NC} $1"
 }
 
 log_warn() {
-	echo -e "${YELLOW}[WARN]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${YELLOW}[WARN]${NC} $1"
+    echo -e "${YELLOW}[WARN]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${YELLOW}[WARN]${NC} $1"
 }
 
 log_error() {
-	echo -e "${RED}[ERROR]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${RED}[ERROR]${NC} $1"
+    echo -e "${RED}[ERROR]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${RED}[ERROR]${NC} $1"
 }
 
 log_success() {
-	echo -e "${GREEN}[SUCCESS]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${GREEN}[SUCCESS]${NC} $1"
+    echo -e "${GREEN}[SUCCESS]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${GREEN}[SUCCESS]${NC} $1"
 }
 
 # Progress indicator
@@ -58,21 +58,30 @@ show_progress() {
 run_with_progress() {
     local message="$1"
     shift
-    
+
     # For sudo commands, ensure credentials are fresh
     if [[ "$1" == "sudo" ]]; then
         sudo -v 2>/dev/null || true
     fi
-    
+
     # Run command in background and capture output
     "$@" >> "${LOG_FILE}" 2>&1 &
     local pid=$!
-    
+
     show_progress "${pid}" "${message}"
-    
+
     # Wait for completion and check exit code
     wait "${pid}"
     return $?
+}
+
+# Ensure sudo credentials are cached
+authenticate_sudo() {
+    # Test sudo access and cache credentials
+    if ! sudo -v; then
+        log_error "Failed to authenticate sudo access"
+        exit 1
+    fi
 }
 
 # Check if user wants terminal configuration
@@ -95,143 +104,139 @@ install_shell_configs() {
 	log_info "Installing shell configurations"
 
 	# Create shell config directory in ZUI
-	mkdir -p "${ZUI_PATH}/shell"
+	if ! run_with_progress "- Creating shell configuration directory" mkdir -p "${ZUI_PATH}/shell" "${ZUI_PATH}/backups/shell"; then
+		log_error "Failed to create shell directories"
+		exit 1
+	fi
 
 	# Copy shell configuration files if they exist
-	shopt -s dotglob  # Include dotfiles
-	cp "${BASE_PATH}/core/shell/*" "${ZUI_PATH}/shell/" 2>/dev/null || true
-	shopt -u dotglob  # Reset dotglob
+	if [[ -d "${BASE_PATH}/common/shell" ]]; then
+		if ! run_with_progress "- Installing shell configuration files" bash -c "shopt -s dotglob && cp '${BASE_PATH}/common/shell'/* '${ZUI_PATH}/shell/' 2>/dev/null; shopt -u dotglob"; then
+			log_warn "Failed to copy shell configuration files"
+		fi
+	fi
 
 	# Backup existing configs if they exist
 	if [[ -f "${HOME}/.zshrc" && ! -L "${HOME}/.zshrc" ]]; then
-		log_info "Backing up existing .zshrc to "${ZUI_PATH}/backup/shell/.zshrc"
-		cp "${HOME}/.zshrc" "${ZUI_PATH}/backup/shell/.zshrc"
+		if ! run_with_progress "- Backing up existing .zshrc" cp "${HOME}/.zshrc" "${ZUI_PATH}/backups/shell/.zshrc"; then
+			log_warn "Failed to backup existing .zshrc"
+		fi
 	fi
 
 	if [[ -f "${HOME}/.p10k.zsh" && ! -L "${HOME}/.p10k.zsh" ]]; then
-		log_info "Backing up existing .p10k.zsh to "${ZUI_PATH}/backup/shell/.p10k.zsh"
-		cp "${HOME}/.p10k.zsh" "${ZUI_PATH}/backup/shell/.p10k.zsh"
+		if ! run_with_progress "- Backing up existing .p10k.zsh" cp "${HOME}/.p10k.zsh" "${ZUI_PATH}/backups/shell/.p10k.zsh"; then
+			log_warn "Failed to backup existing .p10k.zsh"
+		fi
 	fi
 
 	# Create symlinks to ZUI shell configs
 	if [[ -f "${ZUI_PATH}/shell/.zshrc" ]]; then
-		ln -sfn "${ZUI_PATH}/shell/.zshrc" "${HOME}/.zshrc" ||
+		if ! run_with_progress "- Creating .zshrc symlink" ln -sfn "${ZUI_PATH}/shell/.zshrc" "${HOME}/.zshrc"; then
 			log_warn "Failed to create .zshrc symlink"
+		fi
 	fi
 
 	if [[ -f "${ZUI_PATH}/shell/.p10k.zsh" ]]; then
-		ln -sfn "${ZUI_PATH}/shell/.p10k.zsh" "${HOME}/.p10k.zsh" ||
+		if ! run_with_progress "- Creating .p10k.zsh symlink" ln -sfn "${ZUI_PATH}/shell/.p10k.zsh" "${HOME}/.p10k.zsh"; then
 			log_warn "Failed to create .p10k.zsh symlink"
+		fi
 	fi
 
 	# Install vim-plug for neovim
 	if [[ ! -f "${HOME}/.local/share/nvim/site/autoload/plug.vim" ]]; then
-		log_info "Installing vim-plug for neovim"
-		curl -fLo "${HOME}/.local/share/nvim/site/autoload/plug.vim" --create-dirs \
-			https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim ||
+		if ! run_with_progress "- Installing vim-plug for neovim" bash -c "curl -fLo '${HOME}/.local/share/nvim/site/autoload/plug.vim' --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"; then
 			log_warn "Failed to install vim-plug"
+		fi
 	fi
 
 	# Copy vim configuration
-	if [[ -d "${BASE_PATH}/core/.vim" ]]; then
-		cp -r "${BASE_PATH}/core/.vim" "${HOME}/.vim" || log_warn "Failed to copy vim config"
+	if [[ -d "${BASE_PATH}/common/.vim" ]]; then
+		if ! run_with_progress "- Installing vim configuration" cp -r "${BASE_PATH}/common/.vim" "${HOME}/.vim"; then
+			log_warn "Failed to copy vim config"
+		fi
 	fi
-
-	log_success "Shell configurations installed"
+	echo ""
 }
 
 # Install zsh plugins
 install_zsh_plugins() {
-	log_info "Installing zsh plugins..."
+	log_info "Installing zsh plugins"
 
 	# Create zsh plugins directory
-	sudo mkdir -p /usr/share/zsh/zsh-plugins
+	if ! run_with_progress "- Creating zsh plugins directory" sudo mkdir -p /usr/share/zsh/zsh-plugins; then
+		log_error "Failed to create zsh plugins directory"
+		exit 1
+	fi
 
-	# Install popular zsh plugins
+	# Remove existing plugins to ensure clean installation
 	local plugins=(
 		"zsh-syntax-highlighting"
-		"zsh-autosuggestions"
+		"zsh-autosuggestions" 
 		"zsh-autocomplete"
 	)
 
 	for plugin in "${plugins[@]}"; do
 		if [[ -d "/usr/share/zsh/zsh-plugins/${plugin}" ]]; then
-			sudo rm -rf "/usr/share/zsh/zsh-plugins/${plugin}"
+			if ! run_with_progress "- Removing existing ${plugin}" sudo rm -rf "/usr/share/zsh/zsh-plugins/${plugin}"; then
+				log_warn "Failed to remove existing ${plugin}"
+			fi
 		fi
 	done
 
 	# Install plugins
-	sudo git clone --quiet https://github.com/zsh-users/zsh-syntax-highlighting.git \
-		/usr/share/zsh/zsh-plugins/zsh-syntax-highlighting ||
+	if ! run_with_progress "- Installing zsh-syntax-highlighting" sudo git clone --quiet https://github.com/zsh-users/zsh-syntax-highlighting.git /usr/share/zsh/zsh-plugins/zsh-syntax-highlighting; then
 		log_warn "Failed to install zsh-syntax-highlighting"
+	fi
 
-	sudo git clone --quiet https://github.com/zsh-users/zsh-autosuggestions \
-		/usr/share/zsh/zsh-plugins/zsh-autosuggestions ||
+	if ! run_with_progress "- Installing zsh-autosuggestions" sudo git clone --quiet https://github.com/zsh-users/zsh-autosuggestions /usr/share/zsh/zsh-plugins/zsh-autosuggestions; then
 		log_warn "Failed to install zsh-autosuggestions"
+	fi
 
-	sudo git clone --quiet https://github.com/marlonrichert/zsh-autocomplete.git \
-		/usr/share/zsh/zsh-plugins/zsh-autocomplete ||
+	if ! run_with_progress "- Installing zsh-autocomplete" sudo git clone --quiet https://github.com/marlonrichert/zsh-autocomplete.git /usr/share/zsh/zsh-plugins/zsh-autocomplete; then
 		log_warn "Failed to install zsh-autocomplete"
-
-	# Install ZUI-specific sudo plugin
-	# if [[ -d "${BASE_PATH}/redist/zsh-plugins/zsh-sudo" ]]; then
-	# 	sudo cp -r "${BASE_PATH}/redist/zsh-plugins/zsh-sudo" /usr/share/zsh/zsh-plugins/ ||
-	# 		log_warn "Failed to install zsh-sudo plugin"
-	# fi
-
-	log_success "Zsh plugins installed"
+	fi
+	echo ""
 }
 
 # Install additional terminal tools
 install_terminal_tools() {
-	log_info "Installing additional terminal tools..."
+	log_info "Installing terminal tools"
 
-	# Install fzf
-	if [[ -d "${HOME}/.fzf" ]]; then
-		rm -rf "${HOME}/.fzf"
+	if ! run_with_progress "- Installing lsd (LSDeluxe)" sudo apt install -y lsd; then
+		log_error "Failed to install lsd"
+		exit 1
 	fi
 
-	log_info "Installing terminal tools:"
-	if ! run_with_progress_interactive "- lsd (LSDeluxe)" sudo apt install -y \
-        lsd; then
-        log_error "Failed to install lsd"
-        exit 1
-    fi
-	if ! run_with_progress_interactive "- bat (A cat clone with wings)" sudo apt install -y \
-        bat; then
-        log_error "Failed to install bat"
-        exit 1
-    fi
-	if ! run_with_progress_interactive "- ranger (Vim-like file manager)" sudo apt install -y \
-        ranger; then
-        log_error "Failed to install ranger"
-        exit 1
-    fi
-	if ! run_with_progress_interactive "- neovim (Next-generation text editor)" sudo apt install -y \
-        neovim; then
-        log_error "Failed to install neovim"
-        exit 1
-    fi
+	if ! run_with_progress "- Installing bat (A cat clone with wings)" sudo apt install -y bat; then
+		log_error "Failed to install bat"
+		exit 1
+	fi
 
-	log_info "Installing fzf (fuzzy finder)"
-	git clone --quiet --depth 1 https://github.com/junegunn/fzf.git "${HOME}/.fzf" ||
+	if ! run_with_progress "- Installing ranger (Vim-like file manager)" sudo apt install -y ranger; then
+		log_error "Failed to install ranger"
+		exit 1
+	fi
+
+	if ! run_with_progress "- Installing neovim (Next-generation text editor)" sudo apt install -y neovim; then
+		log_error "Failed to install neovim"
+		exit 1
+	fi
+
+	# Install fzf (fuzzy finder)
+	if [[ -d "${HOME}/.fzf" ]]; then
+		if ! run_with_progress "- Removing existing fzf installation" rm -rf "${HOME}/.fzf"; then
+			log_warn "Failed to remove existing fzf"
+		fi
+	fi
+
+	if ! run_with_progress "- Cloning fzf repository" git clone --quiet --depth 1 https://github.com/junegunn/fzf.git "${HOME}/.fzf"; then
 		log_warn "Failed to clone fzf"
-	echo -e 'y\ny\ny\n' | "${HOME}/.fzf/install" >/dev/null ||
-		log_warn "Failed to install fzf"
-
-	# log_info "Installing terminal tools:\n- lsd (LSDeluxe)\n- bat (A cat clone with wings)\n- ranger (Vim-like file manager)\n- neovim (Next-generation text editor)"
-	# sudo apt install lsd bat ranger neovim -y || log_warn "Failed to install terminal tools"
-
-	# log_info "Installing bat (A cat clone with wings)"
-	# sudo apt install bat -y || log_warn "Failed to install bat"
-
-	# log_info "Installing ranger (Vim-like file manager)"
-	# sudo apt install ranger -y || log_warn "Failed to install ranger"
-
-	# log_info "Installing neovim (Next-generation text editor)"
-	# sudo apt install neovim -y || log_warn "Failed to install neovim"
-
-	log_success "Additional terminal tools installed"
+	else
+		if ! run_with_progress "- Installing fzf" bash -c "echo -e 'y\ny\ny\n' | '${HOME}/.fzf/install' >/dev/null"; then
+			log_warn "Failed to install fzf"
+		fi
+	fi
+	echo ""
 }
 
 install_omz() {
@@ -239,49 +244,33 @@ install_omz() {
 
 	# Install for user
 	if [[ ! -d "${HOME}/.oh-my-zsh" ]]; then
-		sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended 2>/dev/null ||
+		if ! run_with_progress "- Installing Oh My Zsh for user" bash -c "sh -c \"\$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\" \"\" --unattended"; then
 			log_warn "Failed to install user Oh My Zsh"
+		fi
 	else
 		log_info "Oh My Zsh already exists for user"
 	fi
-
-	# Install for root
-	# if [[ ! -d "/root/.oh-my-zsh" ]]; then
-	# 	sudo sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended 2>/dev/null ||
-	# 		log_warn "Failed to install root Oh My Zsh"
-	# else
-	# 	log_info "Oh My Zsh already exists for root"
-	# fi
-
-	log_success "Oh My Zsh installed"
+	echo ""
 }
 
 # Install Powerlevel10k theme
 install_p10k() {
-	log_info "Installing Powerlevel10k theme..."
+	log_info "Installing Powerlevel10k theme"
 
 	# Install for user
 	if [[ ! -d "${ZSH_CUSTOM:-${HOME}/.oh-my-zsh/custom}/themes/powerlevel10k" ]]; then
-		git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ZSH_CUSTOM:-${HOME}/.oh-my-zsh/custom}/themes/powerlevel10k" 2>/dev/null ||
+		if ! run_with_progress "- Installing Powerlevel10k for user" git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ZSH_CUSTOM:-${HOME}/.oh-my-zsh/custom}/themes/powerlevel10k"; then
 			log_warn "Failed to install user Powerlevel10k"
+		fi
 	else
 		log_info "Powerlevel10k already exists for user"
 	fi
-
-	# Install for root
-	# if [[ ! -d "/root/.oh-my-zsh/custom/themes/powerlevel10k" ]]; then
-	# 	git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "/root/.oh-my-zsh/custom/themes/powerlevel10k" 2>/dev/null ||
-	# 		log_warn "Failed to install root Powerlevel10k"
-	# else
-	# 	log_info "Powerlevel10k already exists for root"
-	# fi
-
-	log_success "Powerlevel10k theme installed"
+	echo ""
 }
 
 # Set zsh as default shell
 set_default_shell() {
-	log_info "Setting zsh as default shell..."
+	log_info "Setting zsh as default shell"
 
 	# Check if zsh is installed
 	if ! command -v zsh &>/dev/null; then
@@ -291,25 +280,13 @@ set_default_shell() {
 
 	# Change default shell for user
 	if [[ ${SHELL} != *"zsh"* ]]; then
-		log_info "Changing default shell to zsh for user"
-		sudo usermod --shell /usr/bin/zsh "${USER}" ||
+		if ! run_with_progress "- Changing default shell to zsh for user" sudo usermod --shell /usr/bin/zsh "${USER}"; then
 			log_warn "Failed to change user shell to zsh"
+		fi
 	else
 		log_info "User shell is already zsh"
 	fi
-
-	# Change default shell for root
-	# local root_shell
-	# root_shell=$(sudo grep "^root:" /etc/passwd | cut -d: -f7)
-	# if [[ ${root_shell} != *"zsh"* ]]; then
-	# 	log_info "Changing default shell to zsh for root"
-	# 	sudo usermod --shell /usr/bin/zsh root ||
-	# 		log_warn "Failed to change root shell to zsh"
-	# else
-	# 	log_info "Root shell is already zsh"
-	# fi
-
-	log_success "Default shell configuration completed"
+	echo ""
 }
 
 # Configure root environment
@@ -352,6 +329,7 @@ main() {
 	fi
 
 	confirm_terminal_installation
+	authenticate_sudo
 
 	install_omz
 	install_p10k
@@ -359,9 +337,11 @@ main() {
 	install_zsh_plugins
 	install_terminal_tools
 	set_default_shell
-	# configure_root_environment
 
-	log_info "Please restart the shell to use the new configuration."
+	echo ""
+	log_info "Terminal installation completed successfully!"
+	log_info "Please restart your terminal or run 'exec zsh' to use the new configuration."
+	echo ""
 }
 
 # Run main function if script is executed directly
