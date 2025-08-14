@@ -34,18 +34,50 @@ log_success() {
     echo -e "${GREEN}[SUCCESS]${NC} $1"
 }
 
+# Progress indicator
+show_progress() {
+    local pid=$1
+    local message="$2"
+    local spinner='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
+    local i=0
+
+    echo -ne "${BLUE}[INFO]${NC} ${message} "
+    while kill -0 "${pid}" 2>/dev/null; do
+        printf "${spinner:$i:1}"
+        sleep 0.1
+        printf "\b"
+        i=$(( (i+1) % ${#spinner} ))
+    done
+    echo -e "${GREEN}✓${NC}"
+}
+
+# Silent command execution with progress
+run_with_progress() {
+    local message="$1"
+    shift
+
+    # For sudo commands, ensure credentials are fresh
+    if [[ "$1" == "sudo" ]]; then
+        sudo -v 2>/dev/null || true
+    fi
+
+    # Run command in background and capture output
+    "$@" >> "${LOG_FILE}" 2>&1 &
+    local pid=$!
+
+    show_progress "${pid}" "${message}"
+
+    # Wait for completion and check exit code
+    wait "${pid}"
+    return $?
+}
+
 # Create ZUI directory structure
 create_zui_structure() {
-    log_info "Creating ZUI directory structure..."
-    
-    mkdir -p "${ZUI_PATH}"
-    mkdir -p "${ZUI_PATH}/themes"
-    mkdir -p "${ZUI_PATH}/common"
-    mkdir -p "${ZUI_PATH}/shell"
-    mkdir -p "${ZUI_PATH}/backups"
-    mkdir -p "${CONFIG_PATH}"
-    
-    log_success "ZUI directory structure created"
+    if ! run_with_progress "Creating ZUI directory structure" mkdir -p "${ZUI_PATH}" "${ZUI_PATH}/themes" "${ZUI_PATH}/common" "${ZUI_PATH}/shell" "${ZUI_PATH}/backups" "${CONFIG_PATH}"; then
+        log_error "Failed to create ZUI directory structure"
+        exit 1
+    fi
 }
 
 # Copy common configurations
@@ -59,8 +91,6 @@ install_common_configs() {
     else
         rsync -am "${BASE_PATH}/common/" "${ZUI_PATH}/common/"
     fi
-    
-    log_success "Common configurations installed"
 }
 
 # Configure system permissions
@@ -87,8 +117,6 @@ configure_permissions() {
             log_warn "Failed to configure StreamDeck rules"
         sudo udevadm control --reload-rules || log_warn "Failed to reload udev rules"
     fi
-    
-    log_success "System permissions configured"
 }
 
 # Configure network triggers
@@ -108,8 +136,6 @@ configure_network_triggers() {
         log_warn "Failed to install network post-down trigger"
     sudo cp "${TMP_PATH}/trigger-check-network" /etc/network/if-pre-up.d/ || \
         log_warn "Failed to install network pre-up trigger"
-    
-    log_success "Network triggers configured"
 }
 
 # Main installation function
