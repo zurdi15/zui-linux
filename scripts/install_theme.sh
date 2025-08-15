@@ -77,6 +77,15 @@ run_with_progress() {
     return $?
 }
 
+# Ensure sudo credentials are cached
+authenticate_sudo() {
+    # Test sudo access and cache credentials
+    if ! sudo -v; then
+        log_error "Failed to authenticate sudo access"
+        exit 1
+    fi
+}
+
 # Validate theme
 validate_theme() {
     local theme="$1"
@@ -333,6 +342,8 @@ main() {
     echo -e "${CYAN}╰─────────────────────────────────────────────────────────╯${NC}"
     
     local theme="${1:-}"
+
+    authenticate_sudo
 
     # Validate theme
     validate_theme "${theme}"

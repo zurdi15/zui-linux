@@ -34,7 +34,7 @@ lint:
     - shellcheck@0.10.0
     - shfmt@3.6.0
     - svgo@4.0.0
-    - trufflehog@3.90.4
+    - trufflehog@3.90.5
     - yamllint@1.37.1
 actions:
   disabled:

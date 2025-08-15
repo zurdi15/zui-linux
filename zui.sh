@@ -37,6 +37,15 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
+# Ensure sudo credentials are cached
+authenticate_sudo() {
+    # Test sudo access and cache credentials
+    if ! sudo -v; then
+        log_error "Failed to authenticate sudo access"
+        exit 1
+    fi
+}
+
 # Show help
 show_help() {
     cat << EOF
@@ -128,6 +137,7 @@ run_script() {
 
 # Installation functions
 install_full() {
+    authenticate_sudo
     check_deps_command
     backup_command
     install_deps_command
@@ -139,6 +149,7 @@ install_full() {
 }
 
 install_ui_only() {
+    authenticate_sudo
     check_deps_command
     backup_command
     install_deps_command
@@ -151,27 +162,33 @@ install_ui_only() {
 }
 
 install_deps_command() {
+    authenticate_sudo
     run_script "install_deps.sh"
 }
 
 install_core_command() {
+    authenticate_sudo
     run_script "install_core.sh"
 }
 
 install_shell_command() {
+    authenticate_sudo
     run_script "install_shell.sh"
 }
 
 install_theme_command() {
+    authenticate_sudo
     run_script "install_theme.sh" "${THEME}"
 }
 
 post_install_command() {
+    authenticate_sudo
     run_script "post_install.sh"
 }
 
 # Uninstallation
 uninstall_command() {
+    authenticate_sudo
     run_script "uninstall.sh"
 }
 

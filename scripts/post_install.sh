@@ -13,6 +13,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
+BASE_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ZUI_PATH=${ZUI_PATH:-${HOME}/.zui}
 CONFIG_PATH=${CONFIG_PATH:-${HOME}/.config}
 TMP_PATH=${TMP_PATH:-/tmp/zui}
@@ -74,6 +75,15 @@ run_with_progress() {
     # Wait for completion and check exit code
     wait "${pid}"
     return $?
+}
+
+# Ensure sudo credentials are cached
+authenticate_sudo() {
+    # Test sudo access and cache credentials
+    if ! sudo -v; then
+        log_error "Failed to authenticate sudo access"
+        exit 1
+    fi
 }
 
 # Validate installation
@@ -164,8 +174,7 @@ set_permissions() {
 # Create desktop entry for bspwm
 create_desktop_entry() {
     log_info "Creating desktop session entry"
-    
-    local desktop_entry="/usr/share/xsessions/zui.desktop"
+
     local xsessions_dir="/usr/share/xsessions"
     
     # Create xsessions directory if it doesn't exist
@@ -176,24 +185,9 @@ create_desktop_entry() {
             return 0
         fi
     fi
-    # TODO: fix desktop entry
-    if [[ ! -f "${desktop_entry}" ]]; then
-        if ! run_with_progress "- Creating bspwm desktop entry" sudo tee "${desktop_entry}" <<EOF; then
-[Desktop Entry]
-Name=ZUI
-Comment=ZUI Window Manager
-Exec=bspwm
-TryExec=/usr/bin/bspwm
-Type=Application
-Icon=
-X-LightDM-DesktopName=ZUI
-DesktopNames=ZUI
-Keywords=tiling;wm;windowmanager;window;manager;
-EOF
-            log_warn "Cannot create desktop entry (permission denied)"
-        fi
-    else
-        log_info "- Desktop entry already exists"
+
+    if ! run_with_progress "- Creating ZUI desktop entry" sudo cp "${BASE_PATH}/redist/zui.desktop" "${xsessions_dir}"; then
+        log_warn "Cannot create desktop entry (permission denied)"
     fi
     echo ""
 }
@@ -322,6 +316,8 @@ main() {
     echo -e "${CYAN}╰─────────────────────────────────────────────────────────╯${NC}"
     
     # Run post-installation tasks
+    authenticate_sudo
+
     create_backup
     validate_installation || {
         log_error "Installation validation failed. Please check the installation."
