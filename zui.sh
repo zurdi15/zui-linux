@@ -136,7 +136,6 @@ install_full() {
     install_theme_command
     post_install_command
     log_success "ZUI installation completed!"
-    log_info "Please log out and log back in to use ZUI."
 }
 
 install_ui_only() {

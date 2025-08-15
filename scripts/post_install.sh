@@ -7,6 +7,7 @@ set -euo pipefail
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
+CYAN='\033[0;36m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
@@ -316,11 +317,9 @@ check_compatibility() {
 
 # Main post-installation function
 main() {
-    echo ""
-    echo "====================="
-    echo -e "${BLUE}ZUI Post Installation${NC}"
-    echo "====================="
-    echo ""
+    echo -e "${CYAN}╭─────────────────────────────────────────────────────────╮${NC}"
+    echo -e "${CYAN}│                 ${GREEN}ZUI Post Installation${CYAN}                   │${NC}"
+    echo -e "${CYAN}╰─────────────────────────────────────────────────────────╯${NC}"
     
     # Run post-installation tasks
     create_backup

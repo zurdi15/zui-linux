@@ -7,6 +7,7 @@ set -euo pipefail
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
+CYAN='\033[0;36m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
@@ -327,13 +328,11 @@ reload_bspwm() {
 
 # Main installation function
 main() {
-    local theme="${1:-}"
+    echo -e "${CYAN}╭─────────────────────────────────────────────────────────╮${NC}"
+    echo -e "${CYAN}│                 ${GREEN}ZUI Theme Installation${CYAN}                  │${NC}"
+    echo -e "${CYAN}╰─────────────────────────────────────────────────────────╯${NC}"
     
-    echo ""
-    echo "======================"
-    echo -e "${BLUE}ZUI Theme Installation${NC}"
-    echo "======================"
-    echo ""
+    local theme="${1:-}"
 
     # Validate theme
     validate_theme "${theme}"
