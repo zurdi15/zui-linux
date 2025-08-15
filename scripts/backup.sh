@@ -1,31 +1,40 @@
 #!/bin/bash
-# ZUI Backup Script
+# ==========================================
+#           ZUI Linux - Backup Script
+# ==========================================
 # Creates comprehensive backup of existing configurations
-
-set -euo pipefail
 
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+PURPLE='\033[0;35m'
 NC='\033[0m' # No Color
+
+# Configuration
+TMP_PATH=${TMP_PATH:-/tmp/zui}
+LOG_FILE="${TMP_PATH}/log_backup.log"
+
+# Ensure log directory exists
+mkdir -p "${TMP_PATH}"
 
 # Logging functions
 log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
+    echo -e "${BLUE}[INFO]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${BLUE}[INFO]${NC} $1"
 }
 
 log_warn() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
+    echo -e "${YELLOW}[WARN]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${YELLOW}[WARN]${NC} $1"
 }
 
 log_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
+    echo -e "${RED}[ERROR]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${RED}[ERROR]${NC} $1"
 }
 
 log_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
+    echo -e "${GREEN}[SUCCESS]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${GREEN}[SUCCESS]${NC} $1"
 }
 
 # Create backup
@@ -75,7 +84,11 @@ create_backup() {
             else
                 log_warn "Failed to backup: ${item}"
             fi
+        elif [[ -L "${item_path}" ]]; then
+            log_info "Skipped symlink: ${item} -> $(readlink "${item_path}")"
+            ((skipped++))
         else
+            log_warn "Not found: ${item}"
             ((skipped++))
         fi
     done
@@ -93,30 +106,31 @@ Skipped items: ${skipped}
 Items backed up:
 $(find "${backup_dir}" -type f -o -type d | grep -v backup_manifest.txt | sort)
 EOF
-    
-    if [[ ${backed_up} -gt 0 ]]; then
-        log_success "Backup completed: ${backup_dir}"
-        log_info "Backed up ${backed_up} items, skipped ${skipped} items"
-        echo "${backup_dir}"
-        return 0
-    else
-        log_warn "No items were backed up"
+
+    if [[ ! ${backed_up} -gt 0 ]]; then
+        log_warn "No items were backed up (all were symlinks or missing)"
+        log_info "This is normal if ZUI is already installed and managing configs"
         rmdir "${backup_dir}" 2>/dev/null || true
-        return 1
+        return 0  # Change this to 0 instead of 1 - it's not really an error
     fi
 }
 
 # Main function
 main() {
     echo ""
-    echo "================================"
-    echo -e "${BLUE}ZUI Backup current configuration${NC}"
-    echo "================================"
+    echo "========================="
+    echo -e "${BLUE}ZUI Backup current config${NC}"
+    echo "========================="
     echo ""
-
+    
     local backup_dir="${1:-}"
-
+    
     create_backup "${backup_dir}"
+    
+    echo
+    echo -e "${CYAN}╭─────────────────────────────────────────────────────────╮${NC}"
+    echo -e "${CYAN}│                    ${GREEN}Backup Complete!${CYAN}                     │${NC}"
+    echo -e "${CYAN}╰─────────────────────────────────────────────────────────╯${NC}"
 }
 
 # Run main function

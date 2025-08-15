@@ -43,7 +43,7 @@ show_progress() {
     local message="$2"
     local spinner='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
     local i=0
-    
+
     echo -ne "${BLUE}[INFO]${NC} ${message} "
     while kill -0 "${pid}" 2>/dev/null; do
         printf "${spinner:$i:1}"
@@ -103,7 +103,7 @@ validate_installation() {
         log_error "Essential config link missing: ${CONFIG_PATH}/sxhkd"
         essential_missing=1
     fi
-    
+
     if [[ $essential_missing -eq 0 ]]; then
         if ! run_with_progress "- Validating essential configuration links" true; then
             log_error "Essential configuration links validation failed"
