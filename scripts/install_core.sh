@@ -7,6 +7,7 @@ set -euo pipefail
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
+CYAN='\033[0;36m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
@@ -177,11 +178,9 @@ configure_network_triggers() {
 
 # Main installation function
 main() {
-    echo ""
-    echo "====================="
-    echo -e "${BLUE}ZUI Core Installation${NC}"
-    echo "====================="
-    echo ""
+    echo -e "${CYAN}╭─────────────────────────────────────────────────────────╮${NC}"
+    echo -e "${CYAN}│                 ${GREEN}ZUI Core Installation${CYAN}                   │${NC}"
+    echo -e "${CYAN}╰─────────────────────────────────────────────────────────╯${NC}"
 
     authenticate_sudo
 
@@ -194,7 +193,7 @@ main() {
     log_info "Configuration directory: ${CONFIG_PATH}"
     echo ""
     log_info "Next steps:"
-    log_info "- Install terminal configuration (optional): zui.sh install-terminal"
+    log_info "- Install shell configuration (optional): zui.sh install-shell"
     log_info "- Install theme: zui.sh install-theme --theme <theme_name>"
 }
 

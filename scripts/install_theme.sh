@@ -235,7 +235,7 @@ configure_home_files() {
     
     log_info "Configuring home directory files"
     
-    # zshrc configuration (only if terminal is not configured separately)
+    # zshrc configuration (only if shell is not configured separately)
     if [[ -f "${ZUI_PATH}/current_theme/.zshrc" && ! -f "${ZUI_PATH}/shell/.zshrc" ]]; then
         if ! run_with_progress "- Creating zshrc symlinks" bash -c "ln -sfn '${ZUI_PATH}/current_theme/.zshrc' '${HOME}/.zshrc' && sudo ln -sfn '/home/${USER}/.zshrc' /root/.zshrc"; then
             log_warn "Failed to create zshrc symlinks"

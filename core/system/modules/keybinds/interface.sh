@@ -98,7 +98,7 @@ function rofi_cmd () {
     if command -v rofi &> /dev/null; then
         echo -e "$1" | rofi -dmenu -p "⌨ " -theme "${HOME}/.config/rofi/themes/keybinds.rasi" -i -markup-rows
     else
-        # Fallback to terminal display if rofi is not available
+        # Fallback to shell display if rofi is not available
         echo -e "$1" | sed 's/<[^>]*>//g' | less
     fi
 }
@@ -156,7 +156,7 @@ if [[ "$1" == "reload" ]]; then
     pkill -USR1 -x sxhkd
     notify-send "sxhkd" "Configuration reloaded"
 elif [[ "$1" == "test" ]]; then
-    # Terminal test mode
+    # shell test mode
     echo "=== ZUI Keybinds ==="
     echo "Application Keybinds:"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

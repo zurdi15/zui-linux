@@ -5,6 +5,7 @@
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
+CYAN='\033[0;36m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
@@ -114,10 +115,9 @@ check_display() {
 
 # Generate report
 generate_report() {
-    echo ""
-    echo "==========================="
-    echo -e "${BLUE}ZUI Dependency Check Report${NC}"
-    echo -e "===========================\n"
+    echo -e "${CYAN}╭─────────────────────────────────────────────────────────╮${NC}"
+    echo -e "${CYAN}│                  ${GREEN}ZUI Dependency Check${CYAN}                   │${NC}"
+    echo -e "${CYAN}╰─────────────────────────────────────────────────────────╯${NC}"
     
     local total_checks=0
     local passed_checks=0

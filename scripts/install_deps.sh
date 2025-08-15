@@ -7,6 +7,7 @@ set -euo pipefail
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
+CYAN='\033[0;36m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
@@ -400,11 +401,9 @@ generate_summary() {
 
 # Main installation function
 main() {
-    echo ""
-    echo "============================="
-    echo -e "${BLUE}ZUI Dependencies Installation${NC}"
-    echo "============================="
-    echo ""
+    echo -e "${CYAN}╭─────────────────────────────────────────────────────────╮${NC}"
+    echo -e "${CYAN}│              ${GREEN}ZUI Dependencies Installation${CYAN}              │${NC}"
+    echo -e "${CYAN}╰─────────────────────────────────────────────────────────╯${NC}"
     
     # Pre-flight checks
     check_not_root

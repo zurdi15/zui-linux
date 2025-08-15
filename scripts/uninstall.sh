@@ -124,8 +124,8 @@ confirm_uninstall() {
     echo "  - UI configuration symlinks in: ${CONFIG_PATH} (bspwm, polybar, etc.)"
     echo ""
     echo "The following will be preserved:"
-    echo "  - Terminal configurations (.zshrc, .p10k.zsh)"
-    echo "  - Terminal applications (zsh, lsd, bat, ranger, neovim)"
+    echo "  - Shell configurations (.zshrc, .p10k.zsh)"
+    echo "  - Shell applications (zsh, lsd, bat, ranger, neovim)"
     echo "  - User-installed zsh themes and plugins"
     echo ""
     echo "Available backups will be preserved."
@@ -209,7 +209,7 @@ remove_config_symlinks() {
 remove_home_symlinks() {
     log_info "Checking home directory symlinks..."
     
-    # We now preserve terminal configurations (.zshrc, .p10k.zsh)
+    # We now preserve shell configurations (.zshrc, .p10k.zsh)
     # Only remove if they point specifically to ZUI locations
 
     local zshrc_path="${HOME}/.zshrc"
@@ -258,7 +258,7 @@ remove_home_symlinks() {
         fi
     done
     
-    log_success "Home directory symlinks processed (terminal config preserved)"
+    log_success "Home directory symlinks processed (shell config preserved)"
 }
 
 # Remove system rules and triggers
@@ -344,7 +344,7 @@ remove_packages() {
     echo "  2) Remove all UI-related packages (including UI development libraries)"
     echo "  3) Skip package removal"
     echo ""
-    echo "Note: Terminal tools (zsh, lsd, bat, ranger, neovim) are preserved"
+    echo "Note: Shell tools (zsh, lsd, bat, ranger, neovim) are preserved"
     
     read -p "Choose option [1-3]: " -n 1 -r
     echo
@@ -389,7 +389,7 @@ remove_ui_core_packages() {
     printf "  - %s\n" "${packages_found[@]}"
     
     log_info ""
-    log_info "Terminal tools (zsh, lsd, bat, ranger, neovim) will be preserved"
+    log_info "Shell tools (zsh, lsd, bat, ranger, neovim) will be preserved"
     
     read -p "Proceed with UI package removal? [y/N]: " -n 1 -r
     echo
@@ -432,7 +432,7 @@ remove_all_ui_packages() {
     printf "  - %s\n" "${packages_found[@]}"
     
     echo
-    log_info "Terminal tools (zsh, lsd, bat, ranger, neovim) will be preserved"
+    log_info "Shell tools (zsh, lsd, bat, ranger, neovim) will be preserved"
     log_warn "WARNING: This will remove UI development libraries that may be used by other applications!"
     read -p "Are you sure you want to proceed? [y/N]: " -n 1 -r
     echo
@@ -463,10 +463,10 @@ remove_manual_installations() {
     fi
     
     # Note: Preserving Powerlevel10k and user's zsh configuration
-    # Users might have their own terminal setup that we shouldn't touch
+    # Users might have their own shell setup that we shouldn't touch
     
     log_success "Manual UI installations removed"
-    log_info "Terminal configuration (Powerlevel10k, etc.) preserved"
+    log_info "Shell configuration (Powerlevel10k, etc.) preserved"
 }
 
 # Remove desktop entry
@@ -528,8 +528,8 @@ generate_summary() {
     echo "  ✓ UI packages (if selected)"
     echo ""
     echo "Preserved:"
-    echo "  ✓ Terminal tools (zsh, lsd, bat, ranger, neovim)"
-    echo "  ✓ User terminal configuration (themes, plugins)"
+    echo "  ✓ Shell tools (zsh, lsd, bat, ranger, neovim)"
+    echo "  ✓ User shell configuration (themes, plugins)"
     echo "  ✓ Build tools and general development libraries"
     echo ""
     echo "UI package removal was optional and based on user selection."
@@ -537,7 +537,7 @@ generate_summary() {
     echo "Next steps:"
     echo "• If you removed UI packages, log out and log back in"
     echo "• Select a different desktop environment if needed"
-    echo "• Your terminal configuration and tools remain intact"
+    echo "• Your shell configuration and tools remain intact"
     echo ""
     echo "=============================="
 }

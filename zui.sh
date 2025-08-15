@@ -47,10 +47,10 @@ USAGE:
 
 COMMANDS:
     install              Install ZUI with default theme
-    install-ui-only      Install ZUI without terminal configuration
+    install-ui-only      Install ZUI without shell configuration
     install-deps         Install only dependencies
     install-core         Install only UI core components
-    install-terminal     Install terminal configuration (optional)
+    install-shell        Install shell configuration (optional)
     install-theme        Install theme
     set-wallpaper        Set wallpaper (requires path to image file)
     post-install         Run post-installation setup
@@ -132,7 +132,7 @@ install_full() {
     backup_command
     install_deps_command
     install_core_command
-    install_terminal_command
+    install_shell_command
     install_theme_command
     post_install_command
     log_success "ZUI installation completed!"
@@ -147,8 +147,8 @@ install_ui_only() {
     install_theme_command
     post_install_command
     log_success "ZUI UI-only installation completed!"
-    log_warning "Terminal configuration was skipped."
-    log_info "Run '$0 install-terminal' later if you want terminal configuration."
+    log_warning "Shell configuration was skipped."
+    log_info "Run '$0 install-shell' later if you want shell configuration."
 }
 
 install_deps_command() {
@@ -159,8 +159,8 @@ install_core_command() {
     run_script "install_core.sh"
 }
 
-install_terminal_command() {
-    run_script "install_terminal.sh"
+install_shell_command() {
+    run_script "install_shell.sh"
 }
 
 install_theme_command() {
@@ -284,8 +284,8 @@ main() {
         install-core)
             install_core_command
             ;;
-        install-terminal)
-            install_terminal_command
+        install-shell)
+            install_shell_command
             ;;
         install-theme)
             install_theme_command

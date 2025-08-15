@@ -1,12 +1,13 @@
 #!/bin/bash
-# ZUI Terminal Installation Script
-# Optional terminal configuration and tools installation
+# ZUI Shell Installation Script
+# Optional shell configuration and tools installation
 
 set -euo pipefail
 
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
+CYAN='\033[0;36m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
@@ -15,7 +16,7 @@ NC='\033[0m' # No Color
 BASE_PATH=${BASE_PATH:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}
 ZUI_PATH=${ZUI_PATH:-${HOME}/.zui}
 TMP_PATH=${TMP_PATH:-/tmp/zui}
-LOG_FILE="${TMP_PATH}/install_terminal.log"
+LOG_FILE="${TMP_PATH}/install_shell.log"
 
 # Ensure log directory exists
 mkdir -p "${TMP_PATH}"
@@ -84,17 +85,17 @@ authenticate_sudo() {
     fi
 }
 
-# Check if user wants terminal configuration
-confirm_terminal_installation() {
+# Check if user wants shell configuration
+confirm_shell_installation() {
 	log_warn "Note: This will modify your shell configuration."
-	log_warn "If you already have a customized terminal setup, you may want to skip this."
+	log_warn "If you already have a customized shell setup, you may want to skip this."
 	echo ""
 
-	read -p "Install terminal configuration? [y/N]: " -n 1 -r
+	read -p "Install shell configuration? [y/N]: " -n 1 -r
 	echo -e "\n"
 
 	if [[ ! ${REPLY} =~ ^[Yy]$ ]]; then
-		log_info "Terminal installation skipped by user choice."
+		log_info "Shell installation skipped by user choice."
 		exit 0
 	fi
 }
@@ -183,9 +184,9 @@ install_zsh_plugins() {
 	echo ""
 }
 
-# Install additional terminal tools
-install_terminal_tools() {
-	log_info "Installing terminal tools"
+# Install additional shell tools
+install_shell_tools() {
+	log_info "Installing shell tools"
 
 	if ! run_with_progress "- Installing lsd (LSDeluxe)" sudo apt install -y lsd; then
 		log_error "Failed to install lsd"
@@ -258,9 +259,9 @@ set_default_shell() {
 
 # Configure root environment
 # configure_root_environment() {
-# 	log_info "Configuring root terminal environment..."
+# 	log_info "Configuring root shell environment..."
 
-# 	# Create root symlinks for terminal configs
+# 	# Create root symlinks for shell configs
 # 	if [[ -f "${ZUI_PATH}/shell/.zshrc" ]]; then
 # 		sudo ln -sfn "${ZUI_PATH}/shell/.zshrc" /root/.zshrc ||
 # 			log_warn "Failed to create root .zshrc symlink"
@@ -277,16 +278,14 @@ set_default_shell() {
 # 			log_warn "Failed to copy root profile"
 # 	fi
 
-# 	log_success "Root terminal environment configured"
+# 	log_success "Root shell environment configured"
 # }
 
 # Main installation function
 main() {
-	echo ""
-	echo "======================"
-	echo -e "${BLUE}ZUI Shell Installation${NC}"
-	echo "======================"
-	echo ""
+	echo -e "${CYAN}╭─────────────────────────────────────────────────────────╮${NC}"
+    echo -e "${CYAN}│                 ${GREEN}ZUI Shell Installation${CYAN}                  │${NC}"
+    echo -e "${CYAN}╰─────────────────────────────────────────────────────────╯${NC}"
 
 	# Check if ZUI is installed
 	if [[ ! -d ${ZUI_PATH} ]]; then
@@ -295,17 +294,17 @@ main() {
 		exit 1
 	fi
 
-	confirm_terminal_installation
+	confirm_shell_installation
 	authenticate_sudo
 
 	configure_prompt
 	install_shell_configs
 	install_zsh_plugins
-	install_terminal_tools
+	install_shell_tools
 	set_default_shell
 
-	log_info "Terminal installation completed successfully!"
-	log_info "Please restart your terminal or run 'exec zsh' to use the new configuration."
+	log_info "Shell installation completed successfully!"
+	log_info "Please restart your shell or run 'exec zsh' to use the new configuration."
 }
 
 # Run main function if script is executed directly
