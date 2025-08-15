@@ -108,7 +108,7 @@ function show_keybinds () {
     
     # Add header
     keybinds_list+="<b>Application Keybinds</b>\n"
-    keybinds_list+="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+    keybinds_list+="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
     
     # Parse and add main keybinds
     while IFS= read -r line; do
@@ -116,15 +116,13 @@ function show_keybinds () {
     done <<< "$(parse_keybinds)"
     
     keybinds_list+="\n<b>Window Management</b>\n"
-    keybinds_list+="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+    keybinds_list+="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
     
     # Add special bspwm keybinds
     while IFS= read -r line; do
         keybinds_list+="${line}\n"
     done <<< "$(get_special_keybinds)"
-    
-    # Add footer
-    keybinds_list+="\n<i>Select a keybind to copy to clipboard • Press Escape to close</i>"
+
     
     echo -e "${keybinds_list}"
 }
@@ -142,11 +140,13 @@ function main () {
         # Extract just the keybind part before the arrow
         local keybind=$(echo "${selection}" | sed 's/ *-> .*//' | sed 's/<[^>]*>//g')
         if [[ -n "${keybind}" ]] && [[ "${keybind}" != *"━"* ]] && [[ "${keybind}" != *"Press Escape"* ]]; then
+            # Do something with the keybind
+            :
             # Copy keybind to clipboard if available
-            if command -v xclip &> /dev/null; then
-                echo "${keybind}" | xclip -selection clipboard
-                notify-send "Keybind copied" "${keybind}"
-            fi
+            # if command -v xclip &> /dev/null; then
+            #     echo "${keybind}" | xclip -selection clipboard
+            #     notify-send "Keybind copied" "${keybind}"
+            # fi
         fi
     fi
 }
