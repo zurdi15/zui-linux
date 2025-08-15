@@ -4,38 +4,17 @@
 # ==========================================
 # Creates comprehensive backup of existing configurations
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-CYAN='\033[0;36m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-PURPLE='\033[0;35m'
-NC='\033[0m' # No Color
-
 # Configuration
+BASE_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TMP_PATH=${TMP_PATH:-/tmp/zui}
 LOG_FILE="${TMP_PATH}/log_backup.log"
 
 # Ensure log directory exists
 mkdir -p "${TMP_PATH}"
 
-# Logging functions
-log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${BLUE}[INFO]${NC} $1"
-}
-
-log_warn() {
-    echo -e "${YELLOW}[WARN]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${YELLOW}[WARN]${NC} $1"
-}
-
-log_error() {
-    echo -e "${RED}[ERROR]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${RED}[ERROR]${NC} $1"
-}
-
-log_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${GREEN}[SUCCESS]${NC} $1"
-}
+# Imports
+source "${BASE_PATH}/scripts/functions/logger.sh"
+source "${BASE_PATH}/scripts/functions/colors.sh"
 
 # Create backup
 create_backup() {

@@ -1,11 +1,12 @@
 #!/bin/bash
-# ZUI System Dependencies Checker (Simplified)
+# ZUI System Dependencies Checker
 # Checks if all required system dependencies are available
 
 # Configuration
 BASE_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TMP_PATH=${TMP_PATH:-/tmp/zui}
 LOG_FILE="${TMP_PATH}/check_deps.log"
+
 # Ensure log directory exists
 mkdir -p "${TMP_PATH}"
 
