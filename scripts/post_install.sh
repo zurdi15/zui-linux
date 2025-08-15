@@ -165,7 +165,7 @@ set_permissions() {
 create_desktop_entry() {
     log_info "Creating desktop session entry"
     
-    local desktop_entry="/usr/share/xsessions/bspwm.desktop"
+    local desktop_entry="/usr/share/xsessions/zui.desktop"
     local xsessions_dir="/usr/share/xsessions"
     
     # Create xsessions directory if it doesn't exist
@@ -176,18 +176,18 @@ create_desktop_entry() {
             return 0
         fi
     fi
-
+    # TODO: fix desktop entry
     if [[ ! -f "${desktop_entry}" ]]; then
         if ! run_with_progress "- Creating bspwm desktop entry" sudo tee "${desktop_entry}" <<EOF; then
 [Desktop Entry]
-Name=bspwm
-Comment=Binary space partitioning window manager
+Name=ZUI
+Comment=ZUI Window Manager
 Exec=bspwm
-TryExec=bspwm
+TryExec=/usr/bin/bspwm
 Type=Application
-Icon=preferences-system-windows
-X-LightDM-DesktopName=bspwm
-DesktopNames=bspwm
+Icon=
+X-LightDM-DesktopName=ZUI
+DesktopNames=ZUI
 Keywords=tiling;wm;windowmanager;window;manager;
 EOF
             log_warn "Cannot create desktop entry (permission denied)"
