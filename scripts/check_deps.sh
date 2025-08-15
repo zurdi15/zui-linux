@@ -2,30 +2,16 @@
 # ZUI System Dependencies Checker (Simplified)
 # Checks if all required system dependencies are available
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-CYAN='\033[0;36m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+# Configuration
+BASE_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+TMP_PATH=${TMP_PATH:-/tmp/zui}
+LOG_FILE="${TMP_PATH}/check_deps.log"
+# Ensure log directory exists
+mkdir -p "${TMP_PATH}"
 
-# Logging functions
-log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
-}
-
-log_warn() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
-}
-
-log_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
-
-log_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
-}
+# Imports
+source "${BASE_PATH}/scripts/functions/logger.sh"
+source "${BASE_PATH}/scripts/functions/colors.sh"
 
 # Check if command exists
 command_exists() {
@@ -133,7 +119,7 @@ generate_report() {
         ["Applications"]="check_apps"
         ["Python Dependencies"]="check_python"
         ["Snap Package Manager"]="check_snap"
-        # ["Display Server"]="check_display"
+        ["Display Server"]="check_display"
     )
     
     # Run checks
@@ -157,6 +143,7 @@ generate_report() {
     if [[ ${passed_checks} -eq ${total_checks} ]]; then
         log_info "${GREEN}System is ready for ZUI installation ✓ ${NC}"
         echo ""
+        log_info "${BLUE}Check deps log:${NC} ${LOG_FILE}\n"
         log_info "Next steps:"
         log_info "- Install dependencies: zui.sh install-deps"
         return 0

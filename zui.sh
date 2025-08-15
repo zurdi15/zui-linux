@@ -12,39 +12,16 @@ BACKUP_DIR="${BACKUP_DIR:-${HOME}/.zui-backup}"
 INSTALL_DIR="${INSTALL_DIR:-${HOME}/.zui}"
 SCRIPTS_DIR="${SCRIPT_DIR}/scripts"
 THEMES_DIR="${SCRIPT_DIR}/themes"
+TMP_PATH=${TMP_PATH:-/tmp/zui}
+LOG_FILE="${TMP_PATH}/install.log"
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+# Ensure log directory exists
+mkdir -p "${TMP_PATH}"
 
-# Helper functions
-log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
-}
-
-log_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
-}
-
-log_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
-}
-
-log_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
-
-# Ensure sudo credentials are cached
-authenticate_sudo() {
-    # Test sudo access and cache credentials
-    if ! sudo -v; then
-        log_error "Failed to authenticate sudo access"
-        exit 1
-    fi
-}
+# Imports
+source "${SCRIPTS_DIR}/functions/logger.sh"
+source "${SCRIPTS_DIR}/functions/colors.sh"
+source "${SCRIPTS_DIR}/functions/command_utils.sh"
 
 # Show help
 show_help() {

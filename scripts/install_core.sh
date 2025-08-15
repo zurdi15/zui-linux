@@ -4,87 +4,19 @@
 
 set -euo pipefail
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-CYAN='\033[0;36m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
 # Configuration
 BASE_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ZUI_PATH=${ZUI_PATH:-${HOME}/.zui}
 CONFIG_PATH=${CONFIG_PATH:-${HOME}/.config}
 TMP_PATH=${TMP_PATH:-/tmp/zui}
 LOG_FILE="${TMP_PATH}/install_core.log"
-
 # Ensure log directory exists
 mkdir -p "${TMP_PATH}"
 
-# Logging functions
-log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${BLUE}[INFO]${NC} $1"
-}
-
-log_warn() {
-    echo -e "${YELLOW}[WARN]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${YELLOW}[WARN]${NC} $1"
-}
-
-log_error() {
-    echo -e "${RED}[ERROR]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${RED}[ERROR]${NC} $1"
-}
-
-log_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1" | tee -a "${LOG_FILE}" 2>/dev/null || echo -e "${GREEN}[SUCCESS]${NC} $1"
-}
-
-# Progress indicator
-show_progress() {
-    local pid=$1
-    local message="$2"
-    local spinner='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
-    local i=0
-
-    echo -ne "${BLUE}[INFO]${NC} ${message} "
-    while kill -0 "${pid}" 2>/dev/null; do
-        printf "${spinner:$i:1}"
-        sleep 0.1
-        printf "\b"
-        i=$(( (i+1) % ${#spinner} ))
-    done
-    echo -e "${GREEN}✓${NC}"
-}
-
-# Silent command execution with progress
-run_with_progress() {
-    local message="$1"
-    shift
-
-    # For sudo commands, ensure credentials are fresh
-    if [[ "$1" == "sudo" ]]; then
-        sudo -v 2>/dev/null || true
-    fi
-
-    # Run command in background and capture output
-    "$@" >> "${LOG_FILE}" 2>&1 &
-    local pid=$!
-
-    show_progress "${pid}" "${message}"
-
-    # Wait for completion and check exit code
-    wait "${pid}"
-    return $?
-}
-
-# Ensure sudo credentials are cached
-authenticate_sudo() {
-    # Test sudo access and cache credentials
-    if ! sudo -v; then
-        log_error "Failed to authenticate sudo access"
-        exit 1
-    fi
-}
+# Imports
+source "${BASE_PATH}/scripts/functions/logger.sh"
+source "${BASE_PATH}/scripts/functions/colors.sh"
+source "${BASE_PATH}/scripts/functions/command_utils.sh"
 
 create_zui_structure() {
     log_info "Creating ZUI folder structure"
@@ -190,8 +122,8 @@ main() {
 
     echo ""
     log_info "ZUI installed to: ${ZUI_PATH}"
-    log_info "Configuration directory: ${CONFIG_PATH}"
-    echo ""
+    log_info "Configuration directory: ${CONFIG_PATH}\n"
+    log_info "${BLUE}Installation log:${NC} ${LOG_FILE}\n"
     log_info "Next steps:"
     log_info "- Install shell configuration (optional): zui.sh install-shell"
     log_info "- Install theme: zui.sh install-theme --theme <theme_name>"

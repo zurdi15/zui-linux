@@ -4,16 +4,19 @@
 
 set -euo pipefail
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
 # Configuration
+BASE_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ZUI_PATH=${ZUI_PATH:-${HOME}/.zui}
 CONFIG_PATH=${CONFIG_PATH:-${HOME}/.config}
+TMP_PATH=${TMP_PATH:-/tmp/zui}
+LOG_FILE="${TMP_PATH}/install_deps.log"
+
+# Ensure log directory exists
+mkdir -p "${TMP_PATH}"
+
+# Imports
+source "${BASE_PATH}/scripts/functions/logger.sh"
+source "${BASE_PATH}/scripts/functions/colors.sh"
 
 # ZUI UI-related packages (window manager and desktop environment components)
 readonly ZUI_UI_PACKAGES=(
@@ -99,26 +102,9 @@ readonly ZUI_CORE_UI_PACKAGES=(
     "pavucontrol"
 )
 
-# Logging functions
-log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
-}
-
-log_warn() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
-}
-
-log_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
-
-log_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
-}
-
 # Confirmation prompt
 confirm_uninstall() {
-    echo -e "${YELLOW}WARNING: This will remove ZUI and its UI configurations.${NC}"
+    echo -e "${YELLOW}WARNING: This will remove ZUI and its UI configurations.${NC}\n"
     echo "The following will be removed:"
     echo "  - ZUI directory: ${ZUI_PATH}"
     echo "  - UI configuration symlinks in: ${CONFIG_PATH} (bspwm, polybar, etc.)"
@@ -512,13 +498,6 @@ remove_zui_directory() {
 
 # Generate uninstallation summary
 generate_summary() {
-    log_info "Generating uninstallation summary..."
-    
-    echo ""
-    echo "=============================="
-    echo "ZUI Uninstallation Summary"
-    echo "=============================="
-    echo ""
     echo "Removed:"
     echo "  ✓ ZUI directory: ${ZUI_PATH}"
     echo "  ✓ Configuration symlinks"
@@ -544,7 +523,9 @@ generate_summary() {
 
 # Main uninstallation function
 main() {
-    log_info "Starting ZUI uninstallation..."
+    echo -e "${CYAN}╭─────────────────────────────────────────────────────────╮${NC}"
+    echo -e "${CYAN}│                  ${GREEN}ZUI Uninstallation ${CYAN}                    │${NC}"
+    echo -e "${CYAN}╰─────────────────────────────────────────────────────────╯${NC}"
     
     # Check if ZUI is installed
     if [[ ! -d "${ZUI_PATH}" ]]; then
