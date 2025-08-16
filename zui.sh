@@ -190,6 +190,10 @@ restore_command() {
     run_script "restore.sh" "${BACKUP_DIR}"
 }
 
+reload_command() {
+    run_script "reload.sh"
+}
+
 # Theme management
 list_themes_command() {
     log_info "Available themes:"
@@ -267,21 +271,25 @@ main() {
             ;;
         install)
             install_full
+            reload_command
             ;;
         install-ui-only)
             install_ui_only
+            reload_command
             ;;
         install-deps)
             install_deps_command
             ;;
         install-core)
             install_core_command
+            reload_command
             ;;
         install-shell)
             install_shell_command
             ;;
         install-theme)
             install_theme_command
+            reload_command
             ;;
         list-themes)
             list_themes_command
@@ -297,6 +305,9 @@ main() {
             ;;
         clean)
             clean_command
+            ;;
+        reload)
+            reload_command
             ;;
         backup)
             backup_command

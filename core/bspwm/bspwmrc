@@ -5,12 +5,14 @@ export _JAVA_AWT_WM_NONREPARENTING=1
 ZUI_PATH=${HOME}/.zui
 
 # init sxhkd
-pgrep -x sxhkd > /dev/null || sxhkd &
+pkill sxhkd && sleep 1 && sxhkd &
+# pgrep -x sxhkd > /dev/null || sxhkd &
 
 # init dunst notification daemon
-pgrep -x dunst > /dev/null || dunst &
+pkill dunst && sleep 1 && dunst &
+# pgrep -x dunst > /dev/null || dunst &
 
-bash ${ZUI_PATH}/core/system/modules/monitors/interface.sh
+bash "${ZUI_PATH}/core/system/modules/monitors/interface.sh"
 
 # windows configuration
 bspc config border_width 0
@@ -27,4 +29,4 @@ xsetroot -cursor_name left_ptr &
 picom --experimental-backends &
 
 # set background
-feh --bg-fill ${ZUI_PATH}/current_theme/wallpapers/current_wallpaper
+feh --bg-fill "${ZUI_PATH}/current_theme/wallpapers/current_wallpaper"

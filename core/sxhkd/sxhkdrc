@@ -5,7 +5,7 @@ super + Return
 	gnome-terminal
 
 # Screenshot
-super + s
+super + r
 	gnome-screenshot
 
 # Browser
