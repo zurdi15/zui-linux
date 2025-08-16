@@ -4,6 +4,10 @@
 super + Return
 	gnome-terminal
 
+# Screenshot
+super + s
+	gnome-screenshot
+
 # Browser
 super + b
 	brave-browser
@@ -55,7 +59,7 @@ XF86MonBrightnessDown
 
 # sxhkd reload and keybinds
 super + Escape
-	${HOME}/.zui/core/system/modules/keybinds/interface.sh || pkill -USR1 -x sxhkd
+	${HOME}/.zui/core/system/modules/keybinds/interface.sh
 	
 
 # bspwm hotkeys
