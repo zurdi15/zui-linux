@@ -1,8 +1,8 @@
 # ZUI - Automated BSPWM Desktop Environment
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Shell](https://img.shields.io/badge/shell-zsh-green.svg)](https://www.gnu.org/software/zsh/)
 [![WM](https://img.shields.io/badge/window%20manager-bspwm-orange.svg)](https://github.com/baskerville/bspwm)
+[![Shell](https://img.shields.io/badge/shell-zsh-green.svg)](https://www.gnu.org/software/zsh/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 A complete, automated installation system for a modern tiling window manager desktop environment based on **bspwm**. ZUI provides a beautiful, functional, and customizable desktop experience with multiple themes and modular installation options.
 
@@ -18,10 +18,6 @@ This separation means you can:
 - Use ZUI's window manager with your existing terminal setup
 - Enhance your terminal with ZUI's configuration while keeping your current window manager
 - Install everything together for a complete desktop transformation
-- Safely experiment with themes without affecting your shell environment
-- Configure ZUI's enhanced terminal without the window manager  
-- Mix and match components as needed
-- Preserve your terminal customizations when changing UI themes
 
 ## Features
 
@@ -32,7 +28,7 @@ This separation means you can:
 - **Easy Maintenance**: Update components without affecting others
 
 ### 🎨 **Professional Themes**
-- **Multiple Options**: Galaxy, Nord, and Haxor themes included
+- **Multiple Options**: Geometric, Galaxy, Nord and Haxor themes included
 - **Cohesive Design**: Matching colors across all components
 - **Safe Switching**: Change themes without losing terminal configurations
 - **Visual Consistency**: Coordinated UI and terminal styling
@@ -123,7 +119,7 @@ zui.sh install-terminal
 ```bash
 zui.sh install-deps
 zui.sh install-core        # Install UI components
-zui.sh install-terminal    # Configure terminal (optional)
+zui.sh install-shell    # Configure shell (optional)
 zui.sh install-theme -t galaxy  # Apply theme
 ```
 
@@ -132,15 +128,11 @@ zui.sh install-theme -t galaxy  # Apply theme
 ### List Available Themes
 ```bash
 zui.sh list-themes
-# or
-zui-theme list
 ```
 
 ### Switch Themes
 ```bash
-zui.sh apply-theme -t nord
-# or
-zui-theme nord
+zui.sh install-theme -t geometric
 ```
 
 ### Create New Theme
@@ -162,13 +154,13 @@ ZUI provides optional terminal enhancement that works independently from UI them
 
 ### Installation
 ```bash
-zui.sh install-terminal
+zui.sh install-shell
 ```
 
 ## 🔧 Configuration Management
 
 ### Configuration Locations
-```
+```bash
 ~/.config/bspwm/           # Window manager settings
 ~/.config/polybar/         # Status bars  
 ~/.config/sxhkd/           # Keybindings
@@ -191,8 +183,9 @@ ZUI respects your existing terminal setup:
 ### Switching Between Themes
 ```bash
 # Safely switch themes (preserves terminal config)
-zui.sh install-theme -t nord
+zui.sh install-theme -t geometric
 zui.sh install-theme -t galaxy
+zui.sh install-theme -t nord
 zui.sh install-theme -t haxor
 ```
 
@@ -200,6 +193,7 @@ zui.sh install-theme -t haxor
 
 | Shortcut | Action |
 |----------|--------|
+| `Super + Esc` | Show keybinds |
 | `Super + Return` | Open terminal |
 | `Super + D` | Application launcher |
 | `Super + Shift + D` | Command launcher |
