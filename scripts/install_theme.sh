@@ -257,12 +257,22 @@ run_theme_install() {
 }
 
 # Reload window manager
-reload_bspwm() {
+reload() {
     log_info "Applying theme configuration"
     
     if [[ -f "${HOME}/.config/bspwm/bspwmrc" ]]; then
         if ! run_with_progress "- Reloading bspwm configuration" bash "${HOME}/.config/bspwm/bspwmrc"; then
             log_warn "Failed to reload bspwm configuration"
+        fi
+    fi
+    if pgrep -x "dunst" > /dev/null; then
+        if ! run_with_progress "- Restarting dunst daemon" bash -c "pkill -x dunst && sleep 0.5 && dunst &"; then
+            log_warn "Failed to restart dunst daemon"
+        fi
+    else
+        # Start dunst if not running
+        if ! run_with_progress "- Starting dunst daemon" bash -c "dunst &"; then
+            log_warn "Failed to start dunst daemon"
         fi
     fi
     echo ""
@@ -291,7 +301,7 @@ main() {
     run_theme_install "${theme}"
 
     # Reload bspwm to apply theme
-    reload_bspwm
+    reload
 
     log_info "Theme '${theme}' installed successfully!"
     log_info "You may need to reload your shell or log out/in for all changes to take effect."
