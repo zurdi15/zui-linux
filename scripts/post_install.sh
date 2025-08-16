@@ -115,7 +115,7 @@ create_desktop_entry() {
         fi
     fi
 
-    if ! run_with_progress "- Creating ZUI desktop entry" sudo cp "${BASE_PATH}/redist/zui.desktop" "${xsessions_dir}"; then
+    if ! run_with_progress "- Creating ZUI desktop entry" sudo cp "${BASE_PATH}/redist/zui.desktop" "${xsessions_dir}" && sudo gtk-update-icon-cache /usr/share/icons/hicolor; then
         log_warn "Cannot create desktop entry (permission denied)"
     fi
     echo ""

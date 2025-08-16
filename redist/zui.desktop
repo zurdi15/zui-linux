@@ -1,10 +1,7 @@
 [Desktop Entry]
 Name=ZUI
-Comment=ZUI Desktop Environment
+Comment=This session logs you into ZUI
 Exec=bspwm
 TryExec=/usr/bin/bspwm
+Icon=/usr/share/pixmaps/zui.svg
 Type=Application
-Icon=
-X-LightDM-DesktopName=ZUI
-DesktopNames=ZUI
-Keywords=tiling;wm;windowmanager;window;manager;
